@@ -1,0 +1,11 @@
+batch ../test/add
+
+query user1 11 1900/01/01/00:00 2100/01/01/00:00
+query user2 22 1900/01/01/00:00 2100/01/01/00:00
+
+delete user1 22 title1
+delete user1 11 title1
+delete user1 11 title8
+
+query user1 11 1900/01/01/00:00 2100/01/01/00:00
+query user2 22 1900/01/01/00:00 2100/01/01/00:00

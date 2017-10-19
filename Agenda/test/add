@@ -1,0 +1,17 @@
+batch ../test/register
+
+add user1 11 user2 2000/01/01/19:00 2000/01/01/21:00 title1
+
+add user2 22 user3 2000/02/29/19:00 2000/02/29/21:00 title2
+add user3 33 user4 1900/02/29/19:00 1900/02/29/21:00 title3
+
+add user4 44 user1 2000/01/01/18:00 2000/01/01/20:00 title4
+add user1 11 user4 2000/01/01/18:00 2000/01/01/20:00 title5
+
+add user5 55 user1 2000/01/01/21:00 2000/01/01/22:00 title6
+
+add user1 22 user2 2010/01/01/19:00 2010/01/01/21:00 title7
+
+add user1 11 user2 2010/01/01/19:00 2010/01/01/25:00 title8
+
+add user3 33 user2 2100/02/01/19:00 2100/01/01/21:00 title9
