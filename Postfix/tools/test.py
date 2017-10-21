@@ -5,12 +5,13 @@ def testcase(num):
         testfile = '../testcases/tc-00' + str(num) + '.infix'
         stdfile = '../testcases/tc-00' + str(num) + '.postfix'
         back = os.popen('java Postfix < ' + testfile)
-        res = back.readlines()[1]
+        res = back.readlines()
         back.close()
         with open(stdfile) as fp:
             std = fp.readline()
-        print('Stdandard:\t%s' % std, end='')
-        print('Your Answer:\t%s' % res, end='')
+        print('Stdandard:\n\t%s' % std, end='')
+        print('Your Answer:')
+        print('\t' + '\n\t'.join([i[:-1] for i in res]))
     return func
 
 if __name__ == '__main__':
