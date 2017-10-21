@@ -1,13 +1,32 @@
 import java.io.*;
 
+/**
+ * Parser with error recovery strategy that when parser encounter an
+ * unexpected token, it will discard all the following tokens until
+ * an expected one appear.
+ */
 class Parser {
-	static int lookahead;
-	static int previous;
-	boolean isWrong = false;
-	Scanner scanner;
-	String res;
+	/** The next token */
+	private static int lookahead;
 
-	public Parser() throws IOException, Error {
+	/** The previous token */
+	private static int previous;
+
+	/** Whether the expression is wrong */
+	private boolean isWrong = false;
+
+	private Scanner scanner;
+
+	/** Postfix expression of the input expression */
+	private String res;
+
+	/**
+	 * Constructor to initiate a scanner and get the first token for
+	 * this parser.
+	 * 
+	 * @throws IOException if scanner fails to read from input
+	 */
+	public Parser() throws IOException {
 		scanner = new Scanner();
 		try {
 			lookahead = scanner.getNextToken();
@@ -17,16 +36,26 @@ class Parser {
 		res = "";
 	}
 
-	void expr() throws IOException, Error {
+	/**
+	 * Method for non-terminal expr
+	 * 
+	 * @throws Error if this parser encounters some syntax error
+	 */
+	void expr() throws Error {
 		term();
 		rest();
 		if (! isWrong) {
-			System.out.print(res);
+			System.out.println(res);
 			isWrong = false;
 		}
 	}
 
-	void rest() throws IOException, Error {
+	/**
+	 * Method for non-terminal rest.
+	 * 
+	 * @throws Error if this parser encoutners some syntax error
+	 */
+	void rest() throws Error {
 		while (true) {
 			if (lookahead == '+') {
 				match('+');
@@ -44,7 +73,12 @@ class Parser {
 		}
 	}
 
-	void term() throws IOException, Error {
+	/**
+	 * Method for non'terminal term.
+	 * 
+	 * @throws Error if this parser encounters some syntax error
+	 */
+	void term() throws Error {
 		while (true) {
 			if (Character.isDigit((char) lookahead)) {
 				res += (char) lookahead;
@@ -59,7 +93,16 @@ class Parser {
 		}
 	}
 
-	void match(int t) throws IOException, Error {
+	/**
+	 * Method for match.
+	 * If lookahead if the expected token, this method will get next token.
+	 * Otherwise Error will be thrown.
+	 * 
+	 * @param t the token that this parser want
+	 * 
+	 * @throws Error if lookahead if not the expected token
+	 */
+	void match(int t) throws Error {
 		if (lookahead == t) {
 			try {
 				previous = lookahead;
@@ -75,10 +118,19 @@ class Parser {
 		}
 	}
 
+	/**
+	 * Handler for situation where a digit is expected 
+	 * but another kind of token is recognized.
+	 */
 	private void missDigit() {
 		String errors = "";
 		isWrong = true;
-		System.out.println("Syntax error: expected 'digit' token");
+		if (previous == 0) {
+			System.out.println("Syntax error: expected 'digit' token");
+		} else {
+			System.out.println("Syntax error: expected 'digit' token after "
+			                   + (char) previous);
+		}
 		System.out.print("\t" + scanner.getInput() + "\n\t");
 		System.out.print(nspace(scanner.getCount()-1));
 		System.out.print("^");
@@ -102,10 +154,15 @@ class Parser {
 		}
 	}
 
+	/**
+	 * Handler for situation where an operator is expected
+	 * but another kind of token is recognized.
+	 */
 	private void missOperator() {
 		String errors = "";
 		isWrong = true;
-		System.out.println("Syntax error: expected '+' or '-' token");
+		System.out.println("Syntax error: expected '+' or '-' token after "
+		                   + "a 'digit' token");
 		System.out.print("\t" + scanner.getInput() + "\n\t");
 		System.out.print(nspace(scanner.getCount()-1));
 		System.out.print("^");
@@ -129,6 +186,13 @@ class Parser {
 		}
 	}
 
+	/**
+	 * Auxiliary function to generate the given number of spaces
+	 * 
+	 * @param n the number of spaces expected to generate
+	 * 
+	 * @return a string containing n spaces
+	 */
 	private String nspace(int n) {
 		String res = "";
 		for (int i = 0; i < n; ++i) {
@@ -138,17 +202,39 @@ class Parser {
 	}
 }
 
+/**
+ * Scanner with basic lexical check.
+ * getNextToken() is the method used to get the next token.
+ * Note that if the scanner encounters an invalid token, Error will be thrown
+ * instead of returning a special token standing for invalid token.
+ * This scanner is so simple that just one buffer is sufficient to handle an
+ * expression.
+ */
 class Scanner {
 	int cnt = 0;
 	String buffer;
 
+	/**
+	 * Constructor to read input and put it into buffer.
+	 * 
+	 * @throws IOException if fail to read from input
+	 */
 	public Scanner() throws IOException {
 		BufferedReader scanner = new BufferedReader(new InputStreamReader(System.in));
 		buffer = scanner.readLine();
 	}
 
+	/**
+	 * Recognize next token from buffer.
+	 * 
+	 * @throws Error if encounters invalid characters.
+	 * @return '\n' if the buffer is exhausted
+	 */
 	public int getNextToken() {
-		if (cnt == buffer.length()) return '\n';
+		if (cnt >= buffer.length()) {
+			++cnt;
+			return '\n';
+		}
 		char ch = buffer.charAt(cnt++);
 		if (! check(ch)) {
 			String errorMessage = "Lexical error: '+', '-' or digits are expected\n";
@@ -162,14 +248,33 @@ class Scanner {
 		return buffer;
 	}
 
+	/**
+	 * Get the number of token has been recognized.
+	 * 
+	 * @return cnt
+	 */
 	public int getCount() {
 		return cnt;
 	}
 
+	/**
+	 * Check whether ch is a valid character.
+	 * 
+	 * @param ch the character to be checked
+	 * 
+	 * @return false if ch is invalid
+	 */
 	private boolean check(char ch) throws Error {
 		return (ch == '+' || ch == '-' || Character.isDigit((char) ch));
 	}
 
+	/**
+	 * Auxiliary function to generate the given number of spaces.
+	 * 
+	 * @param n the number of spaces should be generated.
+	 * 
+	 * @return a string containing n spaces
+	 */
 	private String nspace(int n) {
 		String res = "";
 		for (int i = 0; i < n; ++i) {
@@ -179,6 +284,9 @@ class Scanner {
 	}
 }
 
+/**
+ * Class with main method to start this program.
+ */
 public class Postfix {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Input an infix expression and output its postfix notation:");
