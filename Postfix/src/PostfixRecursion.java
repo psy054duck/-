@@ -5,7 +5,7 @@ import java.io.*;
  * unexpected token, it will discard all the following tokens until
  * an expected one appear.
  */
-class Parser {
+class ParserRecursion {
 	/** The next token */
 	private static int lookahead;
 
@@ -15,7 +15,7 @@ class Parser {
 	/** Whether the expression is wrong */
 	private boolean isWrong = false;
 
-	private Scanner scanner;
+	private ScannerRecursion scanner;
 
 	/** Postfix expression of the input expression */
 	private String res;
@@ -26,8 +26,8 @@ class Parser {
 	 * 
 	 * @throws IOException if scanner fails to read from input
 	 */
-	public Parser() throws IOException {
-		scanner = new Scanner();
+	public ParserRecursion() throws IOException {
+		scanner = new ScannerRecursion();
 		try {
 			lookahead = scanner.getNextToken();
 		} catch (Error e) {
@@ -56,21 +56,22 @@ class Parser {
 	 * @throws Error if this parser encoutners some syntax error
 	 */
 	void rest() throws Error {
-		while (true) {
 			if (lookahead == '+') {
 				match('+');
 				term();
 				res += "+";
+				rest();
 			} else if (lookahead == '-') {
 				match('-');
 				term();
 				res += "-";
+				rest();
 			} else if (lookahead == '\n') {
-				break;
+
 			} else {
 				missOperator();
+				rest();
 			}
-		}
 	}
 
 	/**
@@ -125,40 +126,25 @@ class Parser {
 	private void missDigit() {
 		String errors = "";
 		isWrong = true;
-		boolean isFirst = false;
-		int pos = scanner.getCount();
-		int lastRight = previous;
 		if (previous == 0) {
-			isFirst = true;
+			System.out.println("Syntax error: expected 'digit' token");
+		} else {
+			System.out.println("Syntax error: expected 'digit' token after "
+			                   + (char) previous);
 		}
+		System.out.print("\t" + scanner.getInput() + "\n\t");
+		System.out.print(nspace(scanner.getCount()-1));
+		System.out.print("^");
 		int cnt = -1;
+		previous = lookahead;
 		while (lookahead != '\n' && ! Character.isDigit((char) lookahead)) {
 			++cnt;
-			previous = lookahead;
 			try {
 				lookahead = scanner.getNextToken();
 			} catch (Error e) {
 				lookahead = 'e';
 				errors += e.getMessage() + "\n";
 			}
-		}
-		if (! isFirst) {
-			if (cnt == 0 && (previous == '+' || previous == '-')) {
-				System.out.println("Syntax error: expected left operand before "
-			                   	   + (char) lastRight);
-			} else if (cnt == 1 && (previous == '+' || previous == '-')) {
-				System.out.println("Syntax error: expected 'digit' token");
-				cnt = 0;
-			} else {
-				System.out.println("Syntax error: expected 'digit' token after "
-			                   	   + (char) lastRight);
-			}
-		}
-		System.out.print("\t" + scanner.getInput() + "\n\t");
-		System.out.print(nspace(pos-1));
-		System.out.print("^");
-		if (previous == '+' || previous == '-') {
-			--cnt;
 		}
 		for (int i = 0; i < cnt; ++i) {
 			System.out.print("~");
@@ -177,13 +163,13 @@ class Parser {
 		String errors = "";
 		isWrong = true;
 		System.out.println("Syntax error: expected '+' or '-' token after "
-		                   + " 'digit' token");
+		                   + "a 'digit' token");
 		System.out.print("\t" + scanner.getInput() + "\n\t");
 		System.out.print(nspace(scanner.getCount()-1));
 		System.out.print("^");
 		int cnt = -1;
+		previous = lookahead;
 		while (lookahead != '\n' && lookahead != '+' && lookahead != '-') {
-			previous = lookahead;
 			++cnt;
 			try {
 				lookahead = scanner.getNextToken();
@@ -192,7 +178,7 @@ class Parser {
 				errors += e.getMessage() + "\n";
 			}
 		}
-		for (int i = 0; i < cnt-1; ++i) {
+		for (int i = 0; i < cnt; ++i) {
 			System.out.print("~");
 		}
 		System.out.print("\n");
@@ -225,7 +211,7 @@ class Parser {
  * This scanner is so simple that just one buffer is sufficient to handle an
  * expression.
  */
-class Scanner {
+class ScannerRecursion {
 	int cnt = 0;
 	String buffer;
 
@@ -234,7 +220,7 @@ class Scanner {
 	 * 
 	 * @throws IOException if fail to read from input
 	 */
-	public Scanner() throws IOException {
+	public ScannerRecursion() throws IOException {
 		BufferedReader scanner = new BufferedReader(new InputStreamReader(System.in));
 		buffer = scanner.readLine();
 	}
@@ -302,10 +288,10 @@ class Scanner {
 /**
  * Class with main method to start this program.
  */
-public class Postfix {
+public class PostfixRecursion {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Input an infix expression and output its postfix notation:");
-		new Parser().expr();
+		new ParserRecursion().expr();
 		System.out.println("End of program.");
 	}
 }
