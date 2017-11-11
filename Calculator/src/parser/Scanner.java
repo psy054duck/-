@@ -24,7 +24,7 @@ class Scanner {
 				  ++lookahead;
 		}
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 		Token token = bool();
 		if (token.getType() != "Error") {
@@ -76,28 +76,28 @@ class Scanner {
 
 	private Token leftParenthesis() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == '(') {
 			++lookahead;
-			return new LeftParenthesisToken();
+			return new Token("(", "(");
 		}
 
-		return new ErrorToken();
+		return new Token("Error", "Error");
 	}
 
 	private Token rightParenthesis() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == ')') {
 			++lookahead;
-			return new RightParenthesisToken();
+			return new Token(")", ")");
 		}
 
-		return new ErrorToken();
+		return new Token("Error", "Error");
 	}
 	private Token identifier() throws IllegalSymbolException,
 	                                  IllegalIdentifierException {
@@ -114,17 +114,17 @@ class Scanner {
 		}
 
 		String lexeme = buffer.substring(tokenBegin, lookahead);
-		if (lexeme == "sin" || lexeme == "cos") {
-			return new UnaryFuncToken(lexeme);
-		} else if (lexeme == "max" || lexeme == "min") {
-			return new VariableFuncToken(lexeme);
+		if (lexeme.equals("sin") || lexeme.equals("cos")) {
+			return new Token(lexeme, "UnaryFunc");
+		} else if (lexeme.equals("max") || lexeme.equals("min")) {
+			return new Token(lexeme, "VariableFuncToken");
 		} else {
 			throw new IllegalIdentifierException();
 		}
 	}
 	private Token bool() {
 		if (lookahead + 4 >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		int init = lookahead;
@@ -132,125 +132,95 @@ class Scanner {
 		if (lexeme.equals("true")
 		    && (lookahead+4 == buffer.length() || ' ' == buffer.charAt(lookahead+4))) {
 			lookahead += 4;
-			return new BoolToken("true");
+			return new Token("true", "BoolExpr");
 		}
 
 		lexeme = buffer.substring(lookahead, lookahead + 5).toLowerCase();
 		if (lexeme.equals("false")
 		    && (lookahead+5 == buffer.length() || ' ' == buffer.charAt(lookahead+5))) {
 			lookahead += 5;
-			return new BoolToken("false");
+			return new Token("false", "BoolExpr");
 		}
 		lookahead = init;
-		return new ErrorToken();
+		return new Token("Error", "Error");
 	}
 
 	private Token question() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == '?') {
 			++lookahead;
-			return new QuestionToken();
+			return new Token("?", "?");
 		} else {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 	}
 
 	private Token colon() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == ':') {
 			++lookahead;
-			return new ColonToken();
+			return new Token(":", ":");
 		} else {
-			return new ErrorToken();
-		}
-	}
-
-	private Token unaryFunc() {
-		if (lookahead + 3 >= buffer.length()) {
-			return new ErrorToken();
-		}
-
-		String nextThree = buffer.substring(lookahead, lookahead+3);
-		if ((nextThree == "sin" || nextThree == "cos")
-		    && ! Character.isLetter(buffer.charAt(lookahead+4))) {
-			lookahead += 3;
-			return new UnaryFuncToken(nextThree);
-		} else {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 	}
 
 	private Token binaryOp() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		char next = buffer.charAt(lookahead);
 		if (next == '+' || next == '/' || next == '^' || next == '*') {
 			++lookahead;
-			return new BinaryOpToken(""+next);
+			return new Token(""+next, ""+next);
 		} else {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 	}
 
 	private Token minus() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == '-') {
 			++lookahead;
-			return new MinusToken();
+			return new Token("-", "-");
 		} else {
-			return new ErrorToken();
-		}
-	}
-
-	private Token variableFunc() {
-		if (lookahead + 3 >= buffer.length()) {
-			return new ErrorToken();
-		}
-
-		String nextThree = buffer.substring(lookahead, lookahead+3);
-		if ((nextThree == "max" || nextThree == "min")
-		    && ! Character.isLetter(buffer.charAt(lookahead+4))) {
-			lookahead += 3;
-			return new VariableFuncToken(nextThree);
-		} else {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 	}
 
 	private Token comma() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		if (buffer.charAt(lookahead) == ',') {
 			++lookahead;
-			return new CommaToken();
+			return new Token(",", ",");
 		}
-		return new ErrorToken();
+		return new Token("Error", "Error");
 	}
 
 	private Token boolOp() {
 		if (lookahead >= buffer.length()) {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 
 		char ch = buffer.charAt(lookahead);
 		if (ch == '&' || ch == '|') {
 			++lookahead;
-			return new BoolOpToken("" + ch);
+			return new Token(""+ch, "BoolOp");
 		} else {
-			return new ErrorToken();
+			return new Token("Error", "Error");
 		}
 	}
 
@@ -292,11 +262,11 @@ class Scanner {
 				break;
 			} else if (state == 8) {
 				lookahead = tokenBegin;
-				return new ErrorToken();
+				return new Token("Error", "Error");
 			}
 		}
 
-		return new CompToken(buffer.substring(tokenBegin, lookahead));
+		return new Token(buffer.substring(tokenBegin, lookahead), "Comp");
 	}
 
 	private Token decimal() throws IllegalDecimalException {
@@ -312,7 +282,7 @@ class Scanner {
 				if (Character.isDigit(ch)) {
 					state = 1;
 				} else {
-					return new ErrorToken();
+					return new Token("Error", "Error");
 				}
 			} else if (state == 1) {
 				if (ch == '.') {
@@ -363,8 +333,8 @@ class Scanner {
                     state = 7;
                 }
 			} else if (state == 7) {
-                --lookahead;
-				return new DecimalToken(buffer.substring(tokenBegin, lookahead));
+				--lookahead;
+				return new Token(buffer.substring(tokenBegin, lookahead), "Decimal");
 			} else if (state == 8) {
                 --lookahead;
 				throw new IllegalDecimalException();
@@ -404,7 +374,11 @@ class Scanner {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Scanner scanner = new Scanner("2.25E+2 - (55.5 + 4 * (10 / 2) ^ 2)");
+		String expression1 = "2.25E+2 - (55.5 + 4 * (10 / 2) ^ 2)";
+		String expression2 = "1 + sin(3)";
+		String expression3 = "max(2, 3e10, 6)";
+		String expression4 = "2.2E-";
+		Scanner scanner = new Scanner(expression4);
 		scanner.printTokens();
 	}
 }
