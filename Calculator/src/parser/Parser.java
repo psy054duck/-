@@ -1,5 +1,9 @@
 package parser;
 
+import parser.token.*;
+import parser.production.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Parser {
@@ -19,7 +23,6 @@ public class Parser {
     }
 
     private void reduce(int index) {
-        double rightOperand = stack[stack.length()-1];
     }
 }
 
@@ -46,6 +49,6 @@ class Table {
     }
 
     public char get(String left, String right) {
-        return table[map.get(left)][map.get(right)];
+        return table[(int) map.get(left)][(int) map.get(right)];
     }
 }
