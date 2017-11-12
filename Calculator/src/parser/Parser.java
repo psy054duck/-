@@ -55,14 +55,14 @@ public class Parser {
     }
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("1+2");
+        Parser parser = new Parser("1*(2+3)");
         System.out.println(parser.parse());
     }
 }
 
 class SymbolStack {
     private ArrayList<Token> stack;
-    private String[] operators = "+ - * / ^ $".split(" ");
+    private String[] operators = "+ - * / ^ ( ) $".split(" ");
 
     public SymbolStack() {
         stack = new ArrayList<Token>();
@@ -103,7 +103,7 @@ class Grammer {
 
     public Grammer() throws Exception {
         productions = new ArrayList<Production>();
-        for (int i = 0; i < 11; ++i) {
+        for (int i = 0; i < 8; ++i) {
             productions.add((Production) Class.forName("parser.production.Production"+String.valueOf(i)).newInstance());
         }
     }
@@ -116,16 +116,18 @@ class Grammer {
 class Table {
     private HashMap<String, Integer> map = new HashMap<String, Integer>();
     private final String[][] table = {
-        {">1", ">1", "<", "<", "<", ">1",},
-        {">2", ">2", "<", "<", "<", ">2"},
-        {">3", ">3", ">3", ">3", "<",  ">3"},
-        {">4", ">4", ">4", ">4", "<", ">4"},
-        {">5", ">5", ">5", ">5", "<", ">5"},
-        {"<", "<", "<", "<", "<", "<",},
+        {">1", ">1", "<", "<", "<", "<", ">1", ">1",},
+        {">2", ">2", "<", "<", "<", "<", ">2", ">2",},
+        {">3", ">3", ">3", ">3", "<", "<", ">3", ">3",},
+        {">4", ">4", ">4", ">4", "<", "<", ">4", ">4",},
+        {">5", ">5", ">5", ">5", "<", "<", ">5", ">5",},
+        {"<", "<", "<", "<", "<", "<", "<", "<",},
+        {">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7"},
+        {"<", "<", "<", "<", "<", "<", "<", "<",},
     };
 
     public Table() {
-        String[] symbols = "+ - * / ^ $".split(" ");
+        String[] symbols = "+ - * / ^ ( ) $".split(" ");
         for (int i = 0; i < symbols.length; ++i) {
             map.put(symbols[i], i);
         }
