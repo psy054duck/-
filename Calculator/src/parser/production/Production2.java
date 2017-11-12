@@ -12,7 +12,7 @@ public class Production2 extends Production {
     public Token action(ArrayList<Token> tokens) {
         double rightOperand = Double.valueOf(tokens.get(0).getValue());
         double leftOperand = Double.valueOf(tokens.get(2).getValue());
-        double res = leftOperand + rightOperand;
+        double res = leftOperand - rightOperand;
 
         return new Token(String.valueOf(res), "ArithExpr");
     }

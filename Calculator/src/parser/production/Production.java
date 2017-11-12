@@ -4,7 +4,7 @@ import parser.token.*;
 
 import java.util.ArrayList;
 
-abstract class Production {
+public abstract class Production {
     private String head;
     private String[] body;
 
@@ -17,5 +17,21 @@ abstract class Production {
 
     public int bodyLength() {
         return body.length;
+    }
+
+    public String getHead() {
+        return head;
+    }
+
+    public String[] getBody() {
+        return body;
+    }
+
+    public void print() {
+        System.out.print(head + "  ->  ");
+        for (String s : body) {
+            System.out.print(s + " ");
+        }
+        System.out.print("\n");
     }
 }

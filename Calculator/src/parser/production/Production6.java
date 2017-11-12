@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 public class Production6 extends Production {
     public Production6() {
-        super("T", new String[] {"P"});
+        super("ArithExpr", new String[] {"Decimal"});
     }
 
     public Token action(ArrayList<Token> tokens) {
-        return new Token(tokens.get(0).getValue(), "T");
+        return new Token(tokens.get(0).getValue(), "ArithExpr");
     }
 }

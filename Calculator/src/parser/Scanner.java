@@ -24,7 +24,7 @@ class Scanner {
 				  ++lookahead;
 		}
 		if (lookahead >= buffer.length()) {
-			return new Token("Error", "Error");
+			return new Token("$", "$");
 		}
 		Token token = bool();
 		if (token.getType() != "Error") {
@@ -365,7 +365,7 @@ class Scanner {
 		System.out.println(buffer);
 		// printState();
 		Token token = getNextToken();
-		while (token.getType() != "Error") {
+		while (token.getType() != "$") {
 			System.out.print(token.getType() + " ");
 			// printState();
 			token = getNextToken();
@@ -378,7 +378,7 @@ class Scanner {
 		String expression2 = "1 + sin(3)";
 		String expression3 = "max(2, 3e10, 6)";
 		String expression4 = "2.2E-";
-		Scanner scanner = new Scanner(expression4);
+		Scanner scanner = new Scanner(expression1);
 		scanner.printTokens();
 	}
 }

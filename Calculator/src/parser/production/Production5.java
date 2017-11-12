@@ -6,14 +6,14 @@ import java.util.ArrayList;
 
 public class Production5 extends Production {
     public Production5() {
-        super("T", new String[] {"T", "/", "P"});
+        super("P", new String[] {"P", "^", "Decimal"});
     }
 
     public Token action(ArrayList<Token> tokens) {
-        double rightOperand = Double.valueOf((tokens.get(0).getValue()));
-        double leftOperand = Double.valueOf((tokens.get(2).getValue()));
-        double res = leftOperand + rightOperand;
+        double rightOperand = Double.valueOf(tokens.get(0).getValue());
+        double leftOperand = Double.valueOf(tokens.get(2).getValue());
+        double res = Math.pow(leftOperand, rightOperand);
 
-        return new Token(String.valueOf(res), "T");
+        return new Token(String.valueOf(res), "P");
     }
 }

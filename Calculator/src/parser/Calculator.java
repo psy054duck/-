@@ -25,10 +25,11 @@ public class Calculator
 	 * @throws ExpressionException  if the expression has error, a corresponding 
 	 *                              exception will be raised. 
 	**/
-	public double calculate(String expression) throws ExpressionException
+	public double calculate(String expression) throws Exception
 	{
 		// You should substitute this method body ...
-		double result = ((int) (Math.random() * 1000000000)) / 100.0;
+		Parser parser = new Parser(expression);
+		double result = parser.parse();
 		return result;
 	}
 }
