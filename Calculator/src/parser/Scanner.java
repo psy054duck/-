@@ -117,7 +117,7 @@ class Scanner {
 		if (lexeme.equals("sin") || lexeme.equals("cos")) {
 			return new Token(lexeme, "UnaryFunc");
 		} else if (lexeme.equals("max") || lexeme.equals("min")) {
-			return new Token(lexeme, "VariableFuncToken");
+			return new Token(lexeme, "VariableFunc");
 		} else {
 			throw new IllegalIdentifierException();
 		}
@@ -378,7 +378,8 @@ class Scanner {
 		String expression2 = "1 + sin(3)";
 		String expression3 = "max(2, 3e10, 6)";
 		String expression4 = "2.2E-";
-		Scanner scanner = new Scanner(expression1);
+		String expression5 = "sin(2+3)";
+		Scanner scanner = new Scanner(expression5);
 		scanner.printTokens();
 	}
 }

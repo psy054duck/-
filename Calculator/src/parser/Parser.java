@@ -6,8 +6,6 @@ import parser.production.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.sound.midi.SysexMessage;
-
 public class Parser {
     private Scanner scanner;
     private SymbolStack stack = new SymbolStack();
@@ -23,7 +21,6 @@ public class Parser {
     }
 
     public double parse() throws Exception {
-        String[] symbols = "+ - * / ^ $".split(" ");
         lookahead = scanner.getNextToken();
         while (true) {
             if (lookahead.getValue().equals("$")
@@ -31,6 +28,7 @@ public class Parser {
                    break;
             }
             String action = null;
+            lookahead = stack.convert(lookahead);
             action = table.get(stack.topOperator().getType(), lookahead.getType());
 
             if (action.charAt(0) == '<') {
@@ -55,7 +53,7 @@ public class Parser {
     }
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("1*(2+3)");
+        Parser parser = new Parser("sin(2+3)^2");
         System.out.println(parser.parse());
     }
 }
@@ -83,6 +81,46 @@ class SymbolStack {
         return new Token("Error", "Error");
     }
 
+    public Token convert(Token token) {
+        return analyzeParenthesis(token);
+    }
+
+    public Token analyzeParenthesis(Token token) {
+        String type = token.getType();
+        if (type.equals("(")) {
+            String prevType = top().getType();
+            String newType = null;
+
+            if (prevType.equals("UnaryFunc")) {
+                newType = "UnaryLeftP";
+            } else if (prevType.equals("VariableFunc")) {
+                newType = "VariableLeftP";
+            } else {
+                newType = "(";
+            }
+
+            return new Token(token.getValue(), newType);
+        } else if (type.equals(")")) {
+            int pos = stack.size()-1;
+            for (; pos >= 0 && ! stack.get(pos).getValue().equals("("); --pos);
+
+            String leftType = stack.get(pos).getType();
+            String newType = null;
+
+            if (leftType.equals("UnaryLeftP")) {
+                newType = "UnaryRightP";
+            } else if (leftType.equals("VariableLeftP")) {
+                newType = "VariableRightP";
+            } else {
+                newType = ")";
+            }
+
+            return new Token(token.getValue(), newType);
+        } else {
+            return token;
+        }
+    }
+
     public Token top() {
         return stack.get(stack.size()-1);
     }
@@ -103,7 +141,7 @@ class Grammer {
 
     public Grammer() throws Exception {
         productions = new ArrayList<Production>();
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < 9; ++i) {
             productions.add((Production) Class.forName("parser.production.Production"+String.valueOf(i)).newInstance());
         }
     }
@@ -116,25 +154,30 @@ class Grammer {
 class Table {
     private HashMap<String, Integer> map = new HashMap<String, Integer>();
     private final String[][] table = {
-        {">1", ">1", "<", "<", "<", "<", ">1", ">1",},
-        {">2", ">2", "<", "<", "<", "<", ">2", ">2",},
-        {">3", ">3", ">3", ">3", "<", "<", ">3", ">3",},
-        {">4", ">4", ">4", ">4", "<", "<", ">4", ">4",},
-        {">5", ">5", ">5", ">5", "<", "<", ">5", ">5",},
-        {"<", "<", "<", "<", "<", "<", "<", "<",},
-        {">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7"},
-        {"<", "<", "<", "<", "<", "<", "<", "<",},
+        /*                 Operator Precedence Table                     */
+        /*****************************************************************/
+        /*+     -     *     /     ^     (     )    ULP   URP    $ */
+        {">1", ">1", "<" , "<" , "<" , "<" , ">1", "<" , ">1", ">1",},  // +
+        {">2", ">2", "<" , "<" , "<" , "<" , ">2", "<" , ">2", ">2",},  // -
+        {">3", ">3", ">3", ">3", "<" , "<" , ">3", "<" , ">3", ">3",},  // *
+        {">4", ">4", ">4", ">4", "<" , "<" , ">4", "<" , ">4", ">4",},  // /
+        {">5", ">5", ">5", ">5", "<" , "<" , ">5", "<" , ">5", ">5",},  // ^
+        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // (
+        {">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7",},  // )
+        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // ULP
+        {">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8",},  // URP
+        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // $
     };
 
     public Table() {
-        String[] symbols = "+ - * / ^ ( ) $".split(" ");
+        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP $".split(" ");
         for (int i = 0; i < symbols.length; ++i) {
             map.put(symbols[i], i);
         }
     }
 
     public String get(String left, String right) {
-        if (right.equals("Decimal")) {
+        if (right.equals("Decimal") || right.equals("UnaryFunc")) {
             return "<";
         }
         return table[map.get(left)][map.get(right)];
