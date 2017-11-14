@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 public class Production7 extends Production {
     public Production7() {
-        super("ArithExpr", new String[] {"(", "ArithExpr", ")"});
+        super("ArithExpr/BoolExpr", new String[] {"(", "ArithExpr/BoolExpr", ")"});
     }
 
     public Token action(ArrayList<Token> tokens) {
-        return new Token(tokens.get(1).getValue(), "ArithExpr");
+        return new Token(tokens.get(1).getValue(), tokens.get(1).getType());
     }
 }

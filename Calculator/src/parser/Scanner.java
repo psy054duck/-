@@ -218,7 +218,7 @@ class Scanner {
 		char ch = buffer.charAt(lookahead);
 		if (ch == '&' || ch == '|') {
 			++lookahead;
-			return new Token(""+ch, "BoolOp");
+			return new Token(""+ch, ""+ch);
 		} else {
 			return new Token("Error", "Error");
 		}

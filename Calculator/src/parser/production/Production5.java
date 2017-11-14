@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Production5 extends Production {
     public Production5() {
-        super("P", new String[] {"P", "^", "Decimal"});
+        super("ArithExpr", new String[] {"ArithExpr", "^", "ArithExpr"});
     }
 
     public Token action(ArrayList<Token> tokens) {

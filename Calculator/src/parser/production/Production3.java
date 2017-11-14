@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Production3 extends Production {
     public Production3() {
-        super("T", new String[] {"T", "*", "P"});
+        super("ArithExpr", new String[] {"ArithExpr", "*", "ArithExpr"});
     }
 
     public Token action(ArrayList<Token> tokens) {
@@ -14,6 +14,6 @@ public class Production3 extends Production {
         double leftOperand = Double.valueOf(tokens.get(2).getValue());
         double res = leftOperand * rightOperand;
 
-        return new Token(String.valueOf(res), "T");
+        return new Token(String.valueOf(res), "ArithExpr");
     }
 }

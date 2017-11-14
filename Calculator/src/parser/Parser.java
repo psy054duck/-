@@ -23,18 +23,20 @@ public class Parser {
     public double parse() throws Exception {
         lookahead = scanner.getNextToken();
         while (true) {
+            stack.printType();
             if (lookahead.getValue().equals("$")
-               && stack.topOperator().getValue().equals("$")) {
-                   break;
+             && stack.topOperator().getValue().equals("$")) {
+                break;
             }
             String action = null;
             lookahead = stack.convert(lookahead);
-            action = table.get(stack.topOperator().getType(), lookahead.getType());
+            action = table.get(stack.topOperator().getType(),
+                               lookahead.getType());
 
             if (action.charAt(0) == '<') {
                 shift();
             } else {
-                reduce(action.charAt(1)-'0');
+                reduce(Integer.valueOf(action.substring(1)));
             }
         }
 
@@ -53,14 +55,14 @@ public class Parser {
     }
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("sin(2+3)^2");
+        Parser parser = new Parser(" -(15)");
         System.out.println(parser.parse());
     }
 }
 
 class SymbolStack {
     private ArrayList<Token> stack;
-    private String[] operators = "+ - * / ^ ( ) $".split(" ");
+    private String[] operators = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative $".split(" ");
 
     public SymbolStack() {
         stack = new ArrayList<Token>();
@@ -73,7 +75,7 @@ class SymbolStack {
     public Token topOperator() {
         for (int i = stack.size()-1; i >= 0; --i) {
             for (String s : operators) {
-                if (s.equals(stack.get(i).getValue())) {
+                if (s.equals(stack.get(i).getType())) {
                     return stack.get(i);
                 }
             }
@@ -81,13 +83,54 @@ class SymbolStack {
         return new Token("Error", "Error");
     }
 
-    public Token convert(Token token) {
-        return analyzeParenthesis(token);
+    public void printValue() {
+        for (Token token : stack) {
+            System.out.print(token.getValue() + " ");
+        }
+        System.out.print("\n");
     }
 
-    public Token analyzeParenthesis(Token token) {
+    public void printType() {
+        for (Token token : stack) {
+            System.out.print(token.getType() + " ");
+        }
+        System.out.print("\n");
+    }
+
+    public Token convert(Token token) {
+        token = analyzeParenthesis(token);
+        token = analyzeComma(token);
+        token = analyzeDecimal(token);
+        token = analyzeMinus(token);
+
+        return token;
+    }
+
+    public Token analyzeMinus(Token token) {
+        String prevType = top().getType();
+
+        if (token.getType().equals("-")) {
+            for (String s : operators) {
+                if (prevType.equals(s)) {
+                    return new Token("-", "Negative");
+                }
+            }
+        }
+
+        return token;
+    }
+
+    public Token analyzeDecimal(Token token) {
         String type = token.getType();
-        if (type.equals("(")) {
+
+        if (type.equals("Decimal")) {
+            return new Token(token.getValue(), "ArithExpr");
+        }
+        return token;
+    }
+    public Token analyzeParenthesis(Token token) {
+        String value = token.getValue();
+        if (value.equals("(")) {
             String prevType = top().getType();
             String newType = null;
 
@@ -100,7 +143,7 @@ class SymbolStack {
             }
 
             return new Token(token.getValue(), newType);
-        } else if (type.equals(")")) {
+        } else if (value.equals(")")) {
             int pos = stack.size()-1;
             for (; pos >= 0 && ! stack.get(pos).getValue().equals("("); --pos);
 
@@ -121,6 +164,19 @@ class SymbolStack {
         }
     }
 
+    public Token analyzeComma(Token token) {
+        if (! token.getValue().equals(",")) {
+            return token;
+        }
+
+        String prevType = topOperator().getType();
+        if (prevType.equals("VariableLeftP")) {
+            return new Token(",", "FuncComma");
+        } else {
+            return new Token(",", "ListComma");
+        }
+    }
+
     public Token top() {
         return stack.get(stack.size()-1);
     }
@@ -138,10 +194,11 @@ class SymbolStack {
 
 class Grammer {
     private ArrayList<Production> productions;
+    private final int numProduction = 13;
 
     public Grammer() throws Exception {
         productions = new ArrayList<Production>();
-        for (int i = 0; i < 9; ++i) {
+        for (int i = 0; i < numProduction; ++i) {
             productions.add((Production) Class.forName("parser.production.Production"+String.valueOf(i)).newInstance());
         }
     }
@@ -156,30 +213,38 @@ class Table {
     private final String[][] table = {
         /*                 Operator Precedence Table                     */
         /*****************************************************************/
-        /*+     -     *     /     ^     (     )    ULP   URP    $ */
-        {">1", ">1", "<" , "<" , "<" , "<" , ">1", "<" , ">1", ">1",},  // +
-        {">2", ">2", "<" , "<" , "<" , "<" , ">2", "<" , ">2", ">2",},  // -
-        {">3", ">3", ">3", ">3", "<" , "<" , ">3", "<" , ">3", ">3",},  // *
-        {">4", ">4", ">4", ">4", "<" , "<" , ">4", "<" , ">4", ">4",},  // /
-        {">5", ">5", ">5", ">5", "<" , "<" , ">5", "<" , ">5", ">5",},  // ^
-        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // (
-        {">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7", ">7",},  // )
-        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // ULP
-        {">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8", ">8",},  // URP
-        {"<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" , "<" ,},  // $
+        /*+     -     *     /     ^     (     )     ULP   URP    COMP   ?      :      &       |     NEG    $ */
+        {">1", ">1", "<" , "<" , "<" , "<" , ">1" , "<" , ">1" , ">1", ">1" , ">1" , ">1"  , ">1" , "<" , ">1" ,},  // +
+        {">2", ">2", "<" , "<" , "<" , "<" , ">2" , "<" , ">2" , ">2", ">2" , ">2" , ">2"  , ">2" , "<" , ">2" ,},  // -
+        {">3", ">3", ">3", ">3", "<" , "<" , ">3" , "<" , ">3" , ">3", ">3" , ">3" , ">3"  , ">3" , "<" , ">3" ,},  // *
+        {">4", ">4", ">4", ">4", "<" , "<" , ">4" , "<" , ">4" , ">4", ">4" , ">4" , ">4"  , ">4" , "<" , ">4" ,},  // /
+        {">5", ">5", ">5", ">5", "<" , "<" , ">5" , "<" , ">5" , ">5", ">5" , ">5" , ">5"  , ">5" , "<" , ">5" ,},  // ^
+        {"<" , "<" , "<" , "<" , "<" , "<" , "<"  , "<" , "<"  , "<" , " "  , " "  , "<"   , "<"  , "<" , "<"  ,},  // (
+        {">7", ">7", ">7", ">7", ">7", ">7", ">7" , ">7", ">7" , ">7", ">7" , ">7" , ">7"  , ">7" , ">7", ">7" ,},  // )
+        {"<" , "<" , "<" , "<" , "<" , "<" , "<"  , "<" , "<"  , "<" , "<"  , " "  , "<"   , "<"  , "<" , "<"  ,},  // ULP
+        {">8", ">8", ">8", ">8", ">8", ">8", ">8" , ">8", ">8" , ">8", ">8" , ">8" , ">8"  , ">8" , ">8", ">8" ,},  // URP
+        {"<" , "<" , "<" , "<" , "<" , "<" , ">9" , "<" , " "  , ">9", ">9" , " "  , ">9"  , ">9" , "<" , ">9" ,},  // COMP
+        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , " "  , "<" , "<"  , "<"  , "<"   , "<"  , "<" , " "  ,},  // ?
+        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , ">10", "<" , "<"  , ">10", "<"   , "<"  , "<" , ">10",},  // :
+        {"<" , "<" , "<" , "<" , "<" , "<" , ">11", "<" , ">11", "<" , ">11", " "  , ">11" , ">11", "<" , ">11",},  // &
+        {"<" , "<" , "<" , "<" , "<" , "<" , ">12", "<" , ">12", "<" , ">12", " "  , "<"   , ">12", "<" , ">12",},  // |
+        {">6", ">6", ">6", ">6", ">6", "<" , ">6" , " " , ">6" , ">6", ">6" , ">6" , ">6"  , ">6" , "<" , ">6" ,},  // NEG
+        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , " "  , "<" , "<"  , " "  , "<"   , "<"  , "<" , "<"  ,},  // $
     };
 
     public Table() {
-        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP $".split(" ");
+        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative $".split(" ");
         for (int i = 0; i < symbols.length; ++i) {
             map.put(symbols[i], i);
         }
     }
 
     public String get(String left, String right) {
-        if (right.equals("Decimal") || right.equals("UnaryFunc")) {
+        if (right.equals("ArithExpr") || right.equals("UnaryFunc") || right.equals("BoolExpr")) {
             return "<";
         }
+        // System.out.println(left);
+        // System.out.println(right);
         return table[map.get(left)][map.get(right)];
     }
 }
