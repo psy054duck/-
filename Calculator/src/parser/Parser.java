@@ -24,6 +24,7 @@ public class Parser {
         lookahead = scanner.getNextToken();
         while (true) {
             stack.printType();
+            // stack.printValue();
             if (lookahead.getValue().equals("$")
              && stack.topOperator().getValue().equals("$")) {
                 break;
@@ -50,19 +51,30 @@ public class Parser {
 
     private void reduce(int index) {
         Production production = grammer.get(index);
-        ArrayList<Token> tokens = stack.remove(production.bodyLength());
+        ArrayList<Token> tokens = null;
+        if (index != 13) {
+            tokens = stack.remove(production.bodyLength());
+        } else {
+            tokens = new ArrayList<Token>();
+            Token token = stack.pop();
+            while (! token.getType().equals("VariableFunc")) {
+                tokens.add(token);
+                token = stack.pop();
+            }
+            tokens.add(token);
+        }
         stack.add(production.action(tokens));
     }
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser(" -(15)");
+        Parser parser = new Parser("sin(max(3.1415926, 3.14/2))");
         System.out.println(parser.parse());
     }
 }
 
 class SymbolStack {
     private ArrayList<Token> stack;
-    private String[] operators = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative $".split(" ");
+    private String[] operators = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative , VariableLeftP VariableRightP ! $".split(" ");
 
     public SymbolStack() {
         stack = new ArrayList<Token>();
@@ -97,9 +109,13 @@ class SymbolStack {
         System.out.print("\n");
     }
 
+    public Token pop() {
+        return stack.remove(stack.size()-1);
+    }
+
     public Token convert(Token token) {
         token = analyzeParenthesis(token);
-        token = analyzeComma(token);
+        // token = analyzeComma(token);
         token = analyzeDecimal(token);
         token = analyzeMinus(token);
 
@@ -128,6 +144,7 @@ class SymbolStack {
         }
         return token;
     }
+
     public Token analyzeParenthesis(Token token) {
         String value = token.getValue();
         if (value.equals("(")) {
@@ -194,7 +211,7 @@ class SymbolStack {
 
 class Grammer {
     private ArrayList<Production> productions;
-    private final int numProduction = 13;
+    private final int numProduction = 15;
 
     public Grammer() throws Exception {
         productions = new ArrayList<Production>();
@@ -213,34 +230,38 @@ class Table {
     private final String[][] table = {
         /*                 Operator Precedence Table                     */
         /*****************************************************************/
-        /*+     -     *     /     ^     (     )     ULP   URP    COMP   ?      :      &       |     NEG    $ */
-        {">1", ">1", "<" , "<" , "<" , "<" , ">1" , "<" , ">1" , ">1", ">1" , ">1" , ">1"  , ">1" , "<" , ">1" ,},  // +
-        {">2", ">2", "<" , "<" , "<" , "<" , ">2" , "<" , ">2" , ">2", ">2" , ">2" , ">2"  , ">2" , "<" , ">2" ,},  // -
-        {">3", ">3", ">3", ">3", "<" , "<" , ">3" , "<" , ">3" , ">3", ">3" , ">3" , ">3"  , ">3" , "<" , ">3" ,},  // *
-        {">4", ">4", ">4", ">4", "<" , "<" , ">4" , "<" , ">4" , ">4", ">4" , ">4" , ">4"  , ">4" , "<" , ">4" ,},  // /
-        {">5", ">5", ">5", ">5", "<" , "<" , ">5" , "<" , ">5" , ">5", ">5" , ">5" , ">5"  , ">5" , "<" , ">5" ,},  // ^
-        {"<" , "<" , "<" , "<" , "<" , "<" , "<"  , "<" , "<"  , "<" , " "  , " "  , "<"   , "<"  , "<" , "<"  ,},  // (
-        {">7", ">7", ">7", ">7", ">7", ">7", ">7" , ">7", ">7" , ">7", ">7" , ">7" , ">7"  , ">7" , ">7", ">7" ,},  // )
-        {"<" , "<" , "<" , "<" , "<" , "<" , "<"  , "<" , "<"  , "<" , "<"  , " "  , "<"   , "<"  , "<" , "<"  ,},  // ULP
-        {">8", ">8", ">8", ">8", ">8", ">8", ">8" , ">8", ">8" , ">8", ">8" , ">8" , ">8"  , ">8" , ">8", ">8" ,},  // URP
-        {"<" , "<" , "<" , "<" , "<" , "<" , ">9" , "<" , " "  , ">9", ">9" , " "  , ">9"  , ">9" , "<" , ">9" ,},  // COMP
-        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , " "  , "<" , "<"  , "<"  , "<"   , "<"  , "<" , " "  ,},  // ?
-        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , ">10", "<" , "<"  , ">10", "<"   , "<"  , "<" , ">10",},  // :
-        {"<" , "<" , "<" , "<" , "<" , "<" , ">11", "<" , ">11", "<" , ">11", " "  , ">11" , ">11", "<" , ">11",},  // &
-        {"<" , "<" , "<" , "<" , "<" , "<" , ">12", "<" , ">12", "<" , ">12", " "  , "<"   , ">12", "<" , ">12",},  // |
-        {">6", ">6", ">6", ">6", ">6", "<" , ">6" , " " , ">6" , ">6", ">6" , ">6" , ">6"  , ">6" , "<" , ">6" ,},  // NEG
-        {"<" , "<" , "<" , "<" , "<" , "<" , " "  , "<" , " "  , "<" , "<"  , " "  , "<"   , "<"  , "<" , "<"  ,},  // $
+        /*+      -      *      /      ^      (      )     ULP    URP    COMP    ?      :      &      |     NEG     ,     VLP   VRP    !     $ */
+        {">1" , ">1" , "<"  , "<"  , "<"  , "<"  , ">1" , "<"  , ">1" , ">1" , ">1" , ">1" , ">1" , ">1" , "<"  , ">1" , "<" , ">1" , "<", ">1" ,},  // +
+        {">2" , ">2" , "<"  , "<"  , "<"  , "<"  , ">2" , "<"  , ">2" , ">2" , ">2" , ">2" , ">2" , ">2" , "<"  , ">2" , "<" , ">2" , "<", ">2" ,},  // -
+        {">3" , ">3" , ">3" , ">3" , "<"  , "<"  , ">3" , "<"  , ">3" , ">3" , ">3" , ">3" , ">3" , ">3" , "<"  , ">3" , "<" , ">3" , "<", ">3" ,},  // *
+        {">4" , ">4" , ">4" , ">4" , "<"  , "<"  , ">4" , "<"  , ">4" , ">4" , ">4" , ">4" , ">4" , ">4" , "<"  , ">4" , "<" , ">4" , "<", ">4" ,},  // /
+        {">5" , ">5" , ">5" , ">5" , "<"  , "<"  , ">5" , "<"  , ">5" , ">5" , ">5" , ">5" , ">5" , ">5" , "<"  , ">5" , "<" , ">5" , "<", ">5" ,},  // ^
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , " "  , "<", " "  ,},  // (
+        {">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , " "  , ">7", ">7" , ">7", ">7" ,},  // )
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , " "  , "<" , " "  , "<", " "  ,},  // ULP
+        {">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , " "  , ">8", ">8" , ">8", ">8" ,},  // URP
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">9" , "<"  , " "  , ">9" , ">9" , " "  , ">9" , ">9" , "<"  , " "  , "<" , " "  , " ", ">9" ,},  // COMP
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<" , " "  , "<", " "  ,},  // ?
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , ">10", "<"  , "<"  , ">10", "<"  , "<"  , "<"  , ">10", "<" , ">10", "<", ">10",},  // :
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">11", "<"  , ">11", "<"  , ">11", " "  , ">11", ">11", "<"  , " "  , "<" , ">11", "<", ">11",},  // &
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">12", "<"  , ">12", "<"  , ">12", " "  , "<"  , ">12", "<"  , " "  , "<" , ">12", "<", ">12",},  // |
+        {">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , " "  , ">6" , ">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , "<" , ">6" , ">6", ">6" ,},  // NEG
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , "<"  , " ", " "  ,},  // ,
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , "<"  , "<", " "  ,},  // VLP
+        {">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", " " , ">13", " ", ">13",},  // VRP
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">14", "<"  , ">14", "<"  , ">14", " "  , ">14", ">14", "<"  , " "  , "<" , " "  , "<", " "  ,},  // !
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , " "  , "<" , "<"  , "<", "<"  ,},  // $
     };
 
     public Table() {
-        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative $".split(" ");
+        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative , VariableLeftP VariableRightP ! $".split(" ");
         for (int i = 0; i < symbols.length; ++i) {
             map.put(symbols[i], i);
         }
     }
 
     public String get(String left, String right) {
-        if (right.equals("ArithExpr") || right.equals("UnaryFunc") || right.equals("BoolExpr")) {
+        if (right.equals("ArithExpr") || right.equals("UnaryFunc") || right.equals("BoolExpr") || right.equals("VariableFunc")) {
             return "<";
         }
         // System.out.println(left);

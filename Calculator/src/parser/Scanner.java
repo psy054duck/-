@@ -50,6 +50,10 @@ class Scanner {
 		if (token.getType() != "Error") {
 			return token;
 		}
+		token = exclamation();
+		if (token.getType() != "Error") {
+			return token;
+		}
 		token = boolOp();
 		if (token.getType() != "Error") {
 			return token;
@@ -207,6 +211,19 @@ class Scanner {
 			++lookahead;
 			return new Token(",", ",");
 		}
+		return new Token("Error", "Error");
+	}
+
+	private Token exclamation() {
+		if (lookahead >= buffer.length()) {
+			return new Token("Error", "Error");
+		}
+
+		if (buffer.charAt(lookahead) == '!') {
+			++lookahead;
+			return new Token("!", "!");
+		}
+
 		return new Token("Error", "Error");
 	}
 
