@@ -1,6 +1,7 @@
 package parser.production;
 
 import parser.token.*;
+import exceptions.*;
 
 import java.util.ArrayList;
 
@@ -9,12 +10,16 @@ public class Production13 extends Production {
         super("ArithExpr", new String[] {"VariableFunc", "(", "ArithList", ")"});
     }
 
-    public Token action(ArrayList<Token> tokens) {
+    public Token action(ArrayList<Token> tokens) throws FunctionCallException,
+                                                        MissingOperandException {
         ArrayList<Double> operands = new ArrayList<Double>();
         for (Token token : tokens) {
             if (token.getType().equals("ArithExpr")) {
                 operands.add(Double.valueOf(token.getValue()));
             }
+        }
+        if (operands.size() < 2) {
+            throw new MissingOperandException();
         }
         double max = -Double.MAX_VALUE;
         double min = Double.MAX_VALUE;

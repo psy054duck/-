@@ -1,0 +1,236 @@
+<?xml version="1.0"?>
+<!-- Standard test cases for EvalExpr -->
+<test-case-definitions>
+
+<test-case>
+	<id>C001</id>
+	<description>A simple expression.</description>
+	<input>2 ^ 2 ^ 3</input>
+	<output>256</output>
+</test-case>
+
+<test-case>
+	<id>C002</id>
+	<description>Expression with arithmetic operations.</description>
+	<input>2.25E+2 - (55.5 + 4 * (10 / 2) ^ 2)</input>
+	<output>69.5</output>
+</test-case>
+
+<test-case>
+	<id>C003</id>
+	<description>Expression with negative number.</description>
+	<input>5 - -2.5</input>
+	<output>7.5</output>
+</test-case>
+
+<test-case>
+	<id>C004</id>
+	<description>Expression with relational and logical operations.</description>
+	<input><![CDATA[(5 > 3) & (4 < 8) ? 15 : 16]]></input>
+	<output>15</output>
+</test-case>
+
+<test-case>
+	<id>C005</id>
+	<description>Predefined functions.</description>
+	<input>max(sin(0.15), cos(0.15), sin(cos(0.15)))</input>
+	<output>0.98877</output>
+</test-case>
+
+<test-case>
+	<id>C006</id>
+	<description>Predefined functions.</description>
+	<input>sin(min(12, 3 * 5, 2 + 3 ^ 2, 3.14E2))</input>
+	<output>-0.99999</output>
+</test-case>
+
+<test-case>
+	<id>E001</id>
+	<description>Left parenthesis expected.</description>
+	<input>(2 + 3) ^ 3) - ((1 + 1)</input>
+	<exception>MissingLeftParenthesisException</exception>
+</test-case>
+
+<test-case>
+	<id>E002</id>
+	<description>Right parenthesis expected.</description>
+	<input>((2 + 3) ^ ((3 - 1) + 1)</input>
+	<exception>MissingRightParenthesisException</exception>
+</test-case>
+
+<test-case>
+	<id>E003</id>
+	<description>Operator expected.</description>
+	<input>(1 + 2) ^ (3 - 4)  5</input>
+	<exception>MissingOperatorException</exception>
+</test-case>
+
+<test-case>
+	<id>E004</id>
+	<description>Operand expected.</description>
+	<input>(1 + 2) ^ (3 - ) + 5</input>
+	<exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+	<id>E005</id>
+	<description>Divided by 0.</description>
+	<input>4 / (12 - 3 * 4) + 1</input>
+	<exception>DividedByZeroException</exception>
+</test-case>
+
+<test-case>
+	<id>E006</id>
+	<description>Type mismatched.</description>
+	<input><![CDATA[(13 < 2 * 5) + 12]]></input>
+	<exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+	<id>E007</id>
+	<description>Scientific Notation Error.</description>
+	<input>4 + 10.E+5 + 1</input>
+	<exception>IllegalDecimalException</exception>
+</test-case>
+
+<test-case>
+	<id>E008</id>
+	<description>Not a predefined identifier.</description>
+	<input>4 + mix(5, 2) + 1</input>
+	<exception>IllegalIdentifierException</exception>
+</test-case>
+
+<test-case>
+	<id>E009</id>
+	<description>Function call error.</description>
+	<input>sin(2, 1)</input>
+	<exception>FunctionCallException</exception>
+</test-case>
+
+<test-case>
+	<id>E010</id>
+	<description>Function call error.</description>
+	<input>min(2.5)</input>
+	<exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E011</id>
+    <description>Trinary operation error</description>
+    <input><![CDATA[false ? 9 : true ? 1 : 3 : 5]]></input>
+    <exception>TrinaryOperationException</exception>
+</test-case>
+
+<test-case>
+    <id>E012</id>
+    <description>Empty expression</description>
+    <input>         </input>
+    <exception>EmptyExpressionException</exception>
+</test-case>
+
+<test-case>
+    <id>E013</id>
+    <description>Trinary operation with type mismatch</description>
+    <input><![CDATA[12 ? 34 : 56]]></input>
+    <exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+    <id>E014</id>
+    <description>sin or cos with operand of wrong type</description>
+    <input>sin(32.5 > 65)</input>
+    <exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+    <id>E015</id>
+    <description>Illegal decimal</description>
+    <input><![CDATA[32e > 0 ? 1 : 2]]></input>
+    <exception>IllegalDecimalException</exception>
+</test-case>
+
+<test-case>
+    <id>E016</id>
+    <description>Function call error</description>
+    <input>sin(2, 1)</input>
+    <exception>FunctionCallException</exception>
+</test-case>
+
+<test-case>
+    <id>E017</id>
+    <description>Function call error</description>
+    <input>max5, 6, 8)</input>
+    <exception>FunctionCallException</exception>
+</test-case>
+
+<test-case>
+    <id>E018</id>
+    <description>Miss operand</description>>
+    <input>sin()</input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E019</id>
+    <description>Miss operand</description>
+    <input>min(, 1.8)</input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E020</id>
+    <description>Miss operand</description>
+    <input>max(3.14, )</input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E021</id>
+    <description>Miss operand</description>
+    <input><![CDATA[true ? : 5]]></input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E022</id>
+    <description>Miss operand</description>
+    <input><![CDATA[2 + ( ? 4 : 5)]]></input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E023</id>
+    <description>Miss operand</description>
+    <input><![CDATA[7 > 0 ? 7 <= 0 ? : 6 : 5]]></input>
+    <exception>MissingOperandException</exception>
+</test-case>
+
+<test-case>
+    <id>E024</id>
+    <description>Miss operator</description>
+    <input>(1 + 2)(3 - 4) - 5</input>
+    <exception>MissingOperatorException</exception>
+</test-case>
+
+<test-case>
+    <id>E025</id>
+    <description>Miss operator</description>
+    <input>cos(0.5)12.3E+4</input>
+    <exception>MissingOperatorException</exception>
+</test-case>
+
+<test-case>
+	<id>E026</id>
+	<description>Invalid result</description>
+	<input>1 > 2</input>
+	<exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+	<id>E027</id>
+	<description>Invalid operand</description>
+	<input>-2 ^ 0.5</input>
+	<exception>SemanticException</exception>
+</test-case>
+
+</test-case-definitions>

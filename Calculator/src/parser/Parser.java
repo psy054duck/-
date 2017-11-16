@@ -2,6 +2,8 @@ package parser;
 
 import parser.token.*;
 import parser.production.*;
+import exceptions.*;
+import tools.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,15 +24,28 @@ public class Parser {
 
     public double parse() throws Exception {
         lookahead = scanner.getNextToken();
+        if (lookahead.getType().equals("$")) {
+            throw new EmptyExpressionException();
+        }
         while (true) {
-            stack.printType();
+            // stack.printType();
             // stack.printValue();
             if (lookahead.getValue().equals("$")
              && stack.topOperator().getValue().equals("$")) {
                 break;
             }
+            String prevType = stack.top().getType();
+            if ((prevType.equals("UnaryFunc") || prevType.equals("VariableFunc"))
+                && ! lookahead.getType().equals("(")) {
+                    throw new FunctionCallException();
+            }
             String action = null;
             lookahead = stack.convert(lookahead);
+            if (lookahead.getType().equals("ArithExpr") || lookahead.getType().equals("BoolExpr")) {
+                if (stack.top().getType().equals("ArithExpr") || stack.top().getType().equals("BoolExpr")) {
+                    throw new MissingOperatorException();
+                }
+            }
             action = table.get(stack.topOperator().getType(),
                                lookahead.getType());
 
@@ -41,6 +56,9 @@ public class Parser {
             }
         }
 
+        if (! stack.top().getType().equals("ArithExpr")) {
+            throw new TypeMismatchedException();
+        }
         return Double.valueOf(stack.top().getValue());
     }
 
@@ -49,25 +67,60 @@ public class Parser {
         lookahead = scanner.getNextToken();
     }
 
-    private void reduce(int index) {
+    private void reduce(int index) throws ExpressionException {
         Production production = grammer.get(index);
         ArrayList<Token> tokens = null;
-        if (index != 13) {
-            tokens = stack.remove(production.bodyLength());
-        } else {
+        if (index == 13) {
             tokens = new ArrayList<Token>();
             Token token = stack.pop();
             while (! token.getType().equals("VariableFunc")) {
                 tokens.add(token);
                 token = stack.pop();
+                if (tokens.get(tokens.size()-1).getType().equals(",")
+                    && token.getType().equals(",")) {
+                        throw new MissingOperandException();
+                }
+                if (token.getType().equals(",") && tokens.get(tokens.size()-1).getValue().equals(")")) {
+                    throw new MissingOperandException();
+                }
+                if (token.getValue().equals("(") && tokens.get(tokens.size()-1).getType().equals(",")) {
+                    throw new MissingOperandException();
+                }
             }
             tokens.add(token);
+        } else if (index == 8) {
+            tokens = new ArrayList<Token>();
+            Token token = stack.pop();
+            while (! token.getType().equals("UnaryFunc")) {
+                tokens.add(token);
+                token = stack.pop();
+            }
+            tokens.add(token);
+        } else if (index == 10) {
+            if (stack.size()-1 < production.bodyLength()) {
+                if (stack.hasType("?")) {
+                    throw new MissingOperandException();
+                } else {
+                    throw new TrinaryOperationException();
+                }
+            }
+            tokens = stack.remove(production.bodyLength());
+        } else {
+            if (stack.size()-1 < production.bodyLength()) {
+                throw new MissingOperandException();
+            }
+            tokens = stack.remove(production.bodyLength());
+        }
+        Token newToken = production.action(tokens);
+        if (newToken.getType().equals("ArithExpr")
+           && stack.top().getType().equals("ArithExpr")) {
+            throw new MissingOperatorException();
         }
         stack.add(production.action(tokens));
     }
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("sin(max(3.1415926, 3.14/2))");
+        Parser parser = new Parser("1+true ? 1 : 2");
         System.out.println(parser.parse());
     }
 }
@@ -95,6 +148,10 @@ class SymbolStack {
         return new Token("Error", "Error");
     }
 
+    public int size() {
+        return stack.size();
+    }
+
     public void printValue() {
         for (Token token : stack) {
             System.out.print(token.getValue() + " ");
@@ -113,7 +170,7 @@ class SymbolStack {
         return stack.remove(stack.size()-1);
     }
 
-    public Token convert(Token token) {
+    public Token convert(Token token) throws MissingLeftParenthesisException {
         token = analyzeParenthesis(token);
         // token = analyzeComma(token);
         token = analyzeDecimal(token);
@@ -145,7 +202,7 @@ class SymbolStack {
         return token;
     }
 
-    public Token analyzeParenthesis(Token token) {
+    public Token analyzeParenthesis(Token token) throws MissingLeftParenthesisException {
         String value = token.getValue();
         if (value.equals("(")) {
             String prevType = top().getType();
@@ -163,6 +220,10 @@ class SymbolStack {
         } else if (value.equals(")")) {
             int pos = stack.size()-1;
             for (; pos >= 0 && ! stack.get(pos).getValue().equals("("); --pos);
+
+            if (pos < 0) {
+                throw new MissingLeftParenthesisException();
+            }
 
             String leftType = stack.get(pos).getType();
             String newType = null;
@@ -198,6 +259,15 @@ class SymbolStack {
         return stack.get(stack.size()-1);
     }
 
+    public boolean hasType(String type) {
+        for (Token t : stack) {
+            if (type.equals(t.getType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ArrayList<Token> remove(int num) {
         ArrayList<Token> tokens = new ArrayList<Token>();
 
@@ -227,6 +297,7 @@ class Grammer {
 
 class Table {
     private HashMap<String, Integer> map = new HashMap<String, Integer>();
+    private String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative , VariableLeftP VariableRightP ! $".split(" ");
     private final String[][] table = {
         /*                 Operator Precedence Table                     */
         /*****************************************************************/
@@ -236,31 +307,47 @@ class Table {
         {">3" , ">3" , ">3" , ">3" , "<"  , "<"  , ">3" , "<"  , ">3" , ">3" , ">3" , ">3" , ">3" , ">3" , "<"  , ">3" , "<" , ">3" , "<", ">3" ,},  // *
         {">4" , ">4" , ">4" , ">4" , "<"  , "<"  , ">4" , "<"  , ">4" , ">4" , ">4" , ">4" , ">4" , ">4" , "<"  , ">4" , "<" , ">4" , "<", ">4" ,},  // /
         {">5" , ">5" , ">5" , ">5" , "<"  , "<"  , ">5" , "<"  , ">5" , ">5" , ">5" , ">5" , ">5" , ">5" , "<"  , ">5" , "<" , ">5" , "<", ">5" ,},  // ^
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , " "  , "<", " "  ,},  // (
-        {">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , " "  , ">7", ">7" , ">7", ">7" ,},  // )
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , " "  , "<" , " "  , "<", " "  ,},  // ULP
-        {">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , " "  , ">8", ">8" , ">8", ">8" ,},  // URP
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">9" , "<"  , " "  , ">9" , ">9" , " "  , ">9" , ">9" , "<"  , " "  , "<" , " "  , " ", ">9" ,},  // COMP
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , " "  , "<", " "  ,},  // (
+        {">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , ">7" , " "  , ">7", ">7" , ">7", ">7",},  // )
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , " "  , "<", " "  ,},  // ULP
+        {">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , ">8" , " "  , ">8", ">8" , ">8", ">8",},  // URP
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">9" , "<"  , ">9" , ">9" , ">9" , ">9"  , ">9" , ">9" , "<"  , ">9" , "<" , ">9" , " ", ">9" ,},  // COMP
         {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<" , " "  , "<", " "  ,},  // ?
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , ">10", "<"  , "<"  , ">10", "<"  , "<"  , "<"  , ">10", "<" , ">10", "<", ">10",},  // :
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">10", "<"  , ">10", "<"  , "<"  , ">10", "<"  , "<"  , "<"  , ">10", "<" , ">10", "<", ">10",},  // :
         {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">11", "<"  , ">11", "<"  , ">11", " "  , ">11", ">11", "<"  , " "  , "<" , ">11", "<", ">11",},  // &
         {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">12", "<"  , ">12", "<"  , ">12", " "  , "<"  , ">12", "<"  , " "  , "<" , ">12", "<", ">12",},  // |
-        {">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , " "  , ">6" , ">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , "<" , ">6" , ">6", ">6" ,},  // NEG
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , "<"  , " ", " "  ,},  // ,
+        {">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , " "  , ">6" , ">6" , ">6" , ">6" , ">6" , ">6" , "<"  , ">6" , "<" , ">6" , ">6", ">6",},  // NEG
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , "<"  , " ", " "  ,},  // ,
         {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<" , "<"  , "<", " "  ,},  // VLP
         {">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", ">13", " " , ">13", " ", ">13",},  // VRP
         {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , ">14", "<"  , ">14", "<"  , ">14", " "  , ">14", ">14", "<"  , " "  , "<" , " "  , "<", " "  ,},  // !
-        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , " "  , "<"  , "<"  , "<"  , " "  , "<" , "<"  , "<", "<"  ,},  // $
+        {"<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<"  , " "  , "<"  , "<"  , "<"  , "<"  , "<"  , "<"  , " "  , "<" , "<"  , "<", "<"  ,},  // $
     };
 
     public Table() {
-        String[] symbols = "+ - * / ^ ( ) UnaryLeftP UnaryRightP Comp ? : & | Negative , VariableLeftP VariableRightP ! $".split(" ");
         for (int i = 0; i < symbols.length; ++i) {
             map.put(symbols[i], i);
         }
     }
 
-    public String get(String left, String right) {
+    public String get(String left, String right) throws MissingRightParenthesisException,
+                                                        TrinaryOperationException {
+        if (left.equals("(") && right.equals(":")) {
+            throw new TrinaryOperationException();
+        }
+        if (left.equals(",") && right.equals("$")) {
+            throw new MissingRightParenthesisException();
+        }
+        if (left.equals("?") && right.equals("$")) {
+            throw new TrinaryOperationException();
+        }
+        if ((left.equals("(") || left.equals("UnaryLeftP") || left.equals("VariableLeftP"))
+           && right.equals("$")) {
+            throw new MissingRightParenthesisException();
+        }
+        if (left.equals(")") || left.equals("UnaryRightP") || left.equals("VariableRightP")) {
+            return table[map.get(left)][0];
+        }
         if (right.equals("ArithExpr") || right.equals("UnaryFunc") || right.equals("BoolExpr") || right.equals("VariableFunc")) {
             return "<";
         }

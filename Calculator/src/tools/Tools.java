@@ -6,4 +6,13 @@ public class Tools {
 			System.out.print(ch);
 		}
 	}
+
+	public static boolean inArray(String[] array, String s) {
+		for (String e : array) {
+			if (e.equals(s)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

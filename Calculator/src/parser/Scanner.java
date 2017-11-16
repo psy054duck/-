@@ -16,9 +16,7 @@ class Scanner {
 		lookahead = 0;
 	}
 
-	public Token getNextToken() throws IllegalDecimalException,
-									   IllegalSymbolException,
-									   IllegalIdentifierException {
+	public Token getNextToken() throws LexicalException {
 		while (lookahead < buffer.length()
 		      && buffer.charAt(lookahead) == ' ') {
 				  ++lookahead;
@@ -290,11 +288,15 @@ class Scanner {
 		tokenBegin = lookahead;
 		int state = 0;
 
+		char ch = buffer.charAt(lookahead);
+		if (ch == '.' || ch == 'E' || ch == 'e') {
+			throw new IllegalDecimalException();
+		}
 		while (true) {
-            char ch = 0;
+            ch = 0;
             if (lookahead < buffer.length()) {
                 ch = buffer.charAt(lookahead);
-            }
+			}
 			if (state == 0) {
 				if (Character.isDigit(ch)) {
 					state = 1;
@@ -376,9 +378,7 @@ class Scanner {
 		System.out.println("^");
 	}
 
-	public void printTokens() throws IllegalDecimalException,
-									 IllegalSymbolException,
-									 IllegalIdentifierException {
+	public void printTokens() throws LexicalException {
 		System.out.println(buffer);
 		// printState();
 		Token token = getNextToken();
