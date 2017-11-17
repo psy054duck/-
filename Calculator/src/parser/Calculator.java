@@ -22,7 +22,7 @@ public class Calculator
 	 * 
 	 * @param expression  user input to the calculator from GUI. 
 	 * @return  if the expression is well-formed, return the evaluation result of it. 
-	 * @throws ExpressionException  if the expression has error, a corresponding 
+	 * @throws Exception  if the expression has error, a corresponding 
 	 *                              exception will be raised. 
 	**/
 	public double calculate(String expression) throws Exception

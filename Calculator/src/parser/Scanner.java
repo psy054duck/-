@@ -6,16 +6,46 @@ import exceptions.*;
 import parser.token.*;
 import tools.*;
 
+/**
+ * Instance of this class will convert the input of character stream
+ * into token stream. And Parser will invoke the getNextToken method
+ * to get the next token.
+ * Note that this scanner won't convert the whole character stream
+ * as soon as it receives the expression when it's instantiated.
+ * Instead, it will recognize only one token when its getNextToken
+ * method is invoked, and remain the rest of the charactor stream
+ * in its buffer.
+ */
 class Scanner {
 	private String buffer;
 	private int lookahead;
 	private int tokenBegin;
 
+	/**
+	 * Constructor with the expression it should parse.
+	 * 
+	 * @param expression the expression to be calculated
+	 */
 	public Scanner(String expression) {
 		buffer = expression;
 		lookahead = 0;
 	}
 
+	/**
+	 * The most important method provided by Scanner.
+	 * Scanner will convert the expression into token stream,
+	 * and then Parser will use it to get the next token of
+	 * the token stream.
+	 * This method use a series of sub-procedures to reconize
+	 * tokens. Each procedure can be viewed as a DFA and
+	 * By adding a start state and using epsilon transitions
+	 * to connect it to the start states of those DFAs.
+	 * So the getNextToken method can be viewed as a NFA.
+	 * 
+	 * @throws LexicalException if any lexical error occurs
+	 * 
+	 * @return the next token
+	 */
 	public Token getNextToken() throws LexicalException {
 		while (lookahead < buffer.length()
 		      && buffer.charAt(lookahead) == ' ') {
@@ -76,6 +106,12 @@ class Scanner {
 		return token;
 	}
 
+	/**
+	 * DFA used to recognize left parenthesis.
+	 * 
+	 * @return Error token if the next token is not left
+	 *         parenthesis
+	 */
 	private Token leftParenthesis() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -89,6 +125,12 @@ class Scanner {
 		return new Token("Error", "Error");
 	}
 
+	/**
+	 * DFA used to recognize right parenthesis.
+	 * 
+	 * @return Error token if the next token is not right
+	 *         parenthesis
+	 */
 	private Token rightParenthesis() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -101,6 +143,16 @@ class Scanner {
 
 		return new Token("Error", "Error");
 	}
+
+	/**
+	 * DFA used to recognize identifier.
+	 * 
+	 * @throws IllegalSymbolException if this scanner encounter
+	 *         an illegal symbol.
+	 * @throws IllegalIdentifierException if this scanner recognizes
+	 *         an illegal identifier.
+	 * @return the corresponding token.
+	 */
 	private Token identifier() throws IllegalSymbolException,
 	                                  IllegalIdentifierException {
 		int tokenBegin = lookahead;
@@ -124,6 +176,13 @@ class Scanner {
 			throw new IllegalIdentifierException();
 		}
 	}
+
+	/**
+	 * DFA used to recognize bool literal.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a bool literal
+	 */
 	private Token bool() {
 		if (lookahead + 4 >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -147,6 +206,12 @@ class Scanner {
 		return new Token("Error", "Error");
 	}
 
+	/**
+	 * DFA used to recognize a question mark.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a question mark
+	 */
 	private Token question() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -160,6 +225,12 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * DFA used to recognize a colon mark.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a colon mark
+	 */
 	private Token colon() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -173,6 +244,12 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * DFA used to recognize binary arithmetic operators
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         binary arithmetic operators
+	 */
 	private Token binaryOp() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -187,6 +264,12 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * DFA used to recognize minus mark.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a minus mark
+	 */
 	private Token minus() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -200,6 +283,12 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * DFA used to recognize comma mark.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a comma mark
+	 */
 	private Token comma() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -212,6 +301,12 @@ class Scanner {
 		return new Token("Error", "Error");
 	}
 
+	/**
+	 * DFA used to recognize exclamation mark.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         an exclamation mark
+	 */
 	private Token exclamation() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -225,6 +320,12 @@ class Scanner {
 		return new Token("Error", "Error");
 	}
 
+	/**
+	 * DFA used to recognize bool operators.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a bool operator
+	 */
 	private Token boolOp() {
 		if (lookahead >= buffer.length()) {
 			return new Token("Error", "Error");
@@ -239,6 +340,12 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * DFA used to recognize comparison operator.
+	 * 
+	 * @return Error token if this scanner fails to recognize
+	 *         a comparison operator
+	 */
 	private Token comp() {
 		int tokenBegin = lookahead;
 		int state = 0;
@@ -284,6 +391,14 @@ class Scanner {
 		return new Token(buffer.substring(tokenBegin, lookahead), "Comp");
 	}
 
+	/**
+	 * DFA used to recognize decimal literal.
+	 * 
+	 * @throws IllegalDecimalException if this scanner fails to
+	 *         recognize decimal literal
+	 * @return Decimal token if this scanner succeed to recognize
+	 *         a decimal token
+	 */
 	private Token decimal() throws IllegalDecimalException {
 		tokenBegin = lookahead;
 		int state = 0;
@@ -363,12 +478,23 @@ class Scanner {
 		}
 	}
 
+	/**
+	 * Auxiliar method used to judge whether a character is a valid
+	 * character of this calculator.
+	 * 
+	 * @param ch the character to be judge
+	 * @return false if the given character is invalid
+	 */
 	private boolean isValid(char ch) {
 		return Character.isDigit(ch)
 			   || Character.isLetter(ch)
 			   || " (),?:+-*/^<>=&|!".contains(""+ch);
 	}
 
+	/**
+	 * Auxiliar method mainly used to debug. It will print
+	 * the buffer and lookahead.
+	 */
 	public void printState() {
 		System.out.println("Scanner state:");
 		Tools.printn(' ', 8);
@@ -378,25 +504,85 @@ class Scanner {
 		System.out.println("^");
 	}
 
-	public void printTokens() throws LexicalException {
-		System.out.println(buffer);
+	/**
+	 * Auxiliar method mainly used to debug.
+	 * It will convert the whole character stream into token
+	 * stream.
+	 * 
+	 * @throws LexicalException if any lexical exception occurs
+	 * 
+	 * @return the token stream
+	 */
+	public String getTokens() throws LexicalException {
+		// System.out.println(buffer);
 		// printState();
+		String output = "";
 		Token token = getNextToken();
 		while (token.getType() != "$") {
-			System.out.print(token.getType() + " ");
+			output += token.getType() + " ";
 			// printState();
 			token = getNextToken();
 		}
-		System.out.print("\n");
+		return output;
 	}
 
 	public static void main(String[] args) throws Exception {
-		String expression1 = "2.25E+2 - (55.5 + 4 * (10 / 2) ^ 2)";
-		String expression2 = "1 + sin(3)";
-		String expression3 = "max(2, 3e10, 6)";
-		String expression4 = "2.2E-";
-		String expression5 = "sin(2+3)";
-		Scanner scanner = new Scanner(expression5);
-		scanner.printTokens();
+		String[] test = {
+			"4 4.7 5e-3 5.3e3 true false tRue faLse",
+			"sin cos max min",
+			"! & | ? : = > < >= <= <>",
+		};
+		String[] output = {
+			"Decimal Decimal Decimal Decimal BoolExpr BoolExpr BoolExpr BoolExpr ",
+			"UnaryFunc UnaryFunc VariableFunc VariableFunc ",
+			"! & | ? : Comp Comp Comp Comp Comp Comp ",
+		};
+		for (int i = 0; i < test.length; ++i) {
+			Scanner scanner = new Scanner(test[i]);
+			String out = scanner.getTokens();
+			if (out.equals(output[i])) {
+				System.out.println("Pass!");
+			} else {
+				System.out.print("Fail: ");
+				System.out.printf("\tOutput: %s\n", out);
+				System.out.printf("\tExpected: %s\n", output[i]);
+			}
+		}
+
+		String[] exceptions = {
+			".11",
+			"e4",
+			"4.e6",
+			"3.",
+			"7e",
+			"mix",
+			"@",
+		};
+		String[] exceptionsOutput = {
+			"IllegalDecimalException",
+			"IllegalDecimalException",
+			"IllegalDecimalException",
+			"IllegalDecimalException",
+			"IllegalDecimalException",
+			"IllegalIdentifierException",
+			"IllegalSymbolException",
+		};
+
+		for (int i = 0; i < exceptions.length; ++i) {
+			Scanner scanner = new Scanner(exceptions[i]);
+			String out = null;
+			try {
+				out = scanner.getTokens();
+			} catch (Exception e) {
+				out = e.getClass().getName().substring(11);
+			}
+			if (out.equals(exceptionsOutput[i])) {
+				System.out.println("Pass!");
+			} else {
+				System.out.println("Fail");
+				System.out.printf("\tOutput: %s\n", out);
+				System.out.printf("\tExpected: %s\n", exceptionsOutput[i]);
+			}
+		}
 	}
 }
