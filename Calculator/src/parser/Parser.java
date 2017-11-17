@@ -56,7 +56,7 @@ public class Parser {
             throw new EmptyExpressionException();
         }
         while (true) {
-            stack.printType();
+            // stack.printType();
             // stack.printValue();
             if (lookahead.getValue().equals("$")
              && stack.topOperator().getValue().equals("$")) {
