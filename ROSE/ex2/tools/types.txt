@@ -1,0 +1,49 @@
+if
+else
+elsif
+then
+end
+array
+var
+of
+while
+do
+record
+begin
+module
+procedure
+const
+mod
+div
+or
+
+write
+writeln
+read
+integer
+boolean
+
+identifier
+
++ plus
+- minus
+* times
+; semi
+, comma
+( leftp
+) rightp
+[ leftb
+] rightb
+. dot
+: colon
+
+= eq
+# ne
+< lt
+<= le
+> gt
+>= ge
+
+:= assign
+
+EOF

@@ -1,0 +1,63 @@
+(* Correct program *)
+MODULE Sample;
+	PROCEDURE CalculateGPA;
+		VAR n, i, result, numerator, denominator: INTEGER;
+		VAR Score, Credit: INTEGER;
+		
+		Read(n);
+		i := 0;
+		WHILE i < n DO
+			Read(Score); Read(Credit);
+			numerator = numerator + Score * Credit;
+			denominator = denominator + Credit;
+		END;
+		
+		Write(numerator DIV denominator);
+	END CalculateGPA;
+	
+	PROCEDURE Abs;
+		VAR num: INTEGER;
+		
+		Read(num);
+		IF num < 0 THEN
+			num = -num;
+		END;
+		
+		Write(num);
+	END Abs;
+	
+	PROCEDURE FindBest:
+		TYPE Student = RECORD
+			id: INTEGER;
+			gpa: INTEGER;
+		END;
+		VAR student: Student;
+		VAR n, i, bestID, bestGPA: INTEGER;
+		
+		Read(n);
+		i := 0;
+		bestID := 0;
+		bestGPA := -1;
+		
+		WHILE i < n DO
+			Read(student.id);
+			Read(student.gpa);
+			
+			IF student.gpa > bestGPA THEN
+				bestGPA := student.gpa;
+				bestID := student.id;
+			END;
+		END;
+		
+		Writeln(student.id);
+		Writeln(student.gpa)
+	END FindBest;
+	
+	PROCEDURE isEven;
+		VAR num: INTEGER;
+		
+		Read(num);
+		
+		IF num MOD 2 = 
+	END isEven;
+END Sample.
