@@ -1,6 +1,6 @@
 import os
 
-if __name__ == '__main__':
+def gen():
     declaration_pattern = 'public static final int %s = %d;'
     program = 'public class Type {'
 

@@ -5,7 +5,7 @@ MODULE Sample;
 		VAR Score, Credit: INTEGER;
 		
 		Read(n);
-		i := 0;
+		i := 076;
 		WHILE i < n DO
 			Read(Score); Read(Credit);
 			numerator = numerator + Score * Credit;

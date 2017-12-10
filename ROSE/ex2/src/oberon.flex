@@ -15,12 +15,18 @@
     private Symbol symbol(int type, String value) {
         return new Symbol(type, yyline+1, yycolumn+1, value);
     }
+
+    private String oct2dec(String num) {
+        return String.valueOf(Integer.parseInt(num, 8));
+    }
 %}
 
-Alphanum   = {:letter:} | {:digit:}
-Identifier = {:letter:}{Alphanum}*
-Integer    = [:digit:]+
-WhiteSpace = [ \t\n\r]*
+Alphanum        = [:letter:] | [:digit:]
+Identifier      = [:letter:]{Alphanum}*
+Integer         = [:digit:]+
+OctalInteger    = 0[:digit:]+
+WhiteSpace      = [ \t\n\r]*
+Comment         = "(*" ~"*)"
 
 %%
 <YYINITIAL> {
@@ -69,8 +75,10 @@ WhiteSpace = [ \t\n\r]*
 
 <YYINITIAL> {
     {Identifier}        { return symbol(Type.IDENTIFIER, yytext()); }
+    {OctalInteger}      { return symbol(Type.INTEGER, oct2dec(yytext())); }
     {Integer}           { return symbol(Type.INTEGER, yytext()); }
     {WhiteSpace}        {}
+    {Comment}           {}
 }
 
 <<EOF>>                 { return symbol(Type.EOF); }

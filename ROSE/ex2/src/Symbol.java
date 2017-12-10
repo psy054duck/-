@@ -15,12 +15,17 @@ public class Symbol {
         type = t;
         line = l;
         column = c;
+        value = "";
     }
 
     public String toString() {
         String lineStr = "line:" + String.format("%3d", line);
         String columnStr = "column:" + String.format("%3d", column);
-        return String.format("sym:%3d %15s%15s", type, lineStr, columnStr);
+        if (! value.isEmpty()) {
+            return String.format("sym:%3d %15s%15s%10s: %s", type, lineStr, columnStr, "value", value);
+        } else {
+            return String.format("sym:%3d %15s%15s", type, lineStr, columnStr);
+        }
     }
 
     public int getType() {

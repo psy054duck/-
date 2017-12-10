@@ -35,7 +35,7 @@ public class Type {
 	public static final int DOT = 33;
 	public static final int COLON = 34;
 	public static final int EQ = 35;
-	public static final int BASE = 36;
+	public static final int NE = 36;
 	public static final int LT = 37;
 	public static final int LE = 38;
 	public static final int GT = 39;
