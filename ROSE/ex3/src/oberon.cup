@@ -1,0 +1,208 @@
+import java_cup.runtime.*;
+import java.util.*;
+import callgraph.*;
+
+parser code {:
+    OberonScanner s;
+    int fcnt = 0;
+    int ccnt = 0;
+    HashMap<String, String> procedureMap = new HashMap<String, String>();
+    HashMap<String, String> callSiteMap = new HashMap<String, String>();
+    String currentProcedure = null;
+    CallGraph graph = new CallGraph();
+    OberonParser(OberonScanner s) { this.s = s; }
+    String getTypes(String argv) {
+        String[] s = argv.split(";");
+        String res = "";
+        for (int i = 0; i < s.length; ++i) {
+            String[] ss = s[i].split(":");
+            for (int j = 0; j < ss.length; ++j) {
+                if (j % 2 == 1) {
+                    if (res.length() != 0) {
+                        res += ", ";
+                    }
+                    res += ss[j];
+                }
+            }
+        }
+        if (res.length() == 0) {
+            return "()";
+        } else if (res.charAt(res.length()-1) == ')') {
+            return "(" + res.trim();
+        } else {
+            return "(" + res.trim() + ")";
+        }
+    }
+:}
+
+scan with {: return s.next_token(); :};
+
+non terminal String           module, begin, declarations, type_declaration, if_statement;
+non terminal String           const_declaration, const_expression, type_expression;
+non terminal String           var_declaration, var_expression, procedure_declarations;
+non terminal String           procedure_declaration, procedure_body, procedure_heading;
+non terminal String           field_list, field_list_with_semi;
+non terminal String           statement_sequence;
+non terminal String           statement_with_semi, statement, while_statement, else_statement;
+non terminal String           elsif_statement, procedure_call, actual_parameters, assignment;
+non terminal String           expression, expression_list, expression_list_with, comp;
+non terminal String           comp_expression, unary, binary_low, binary_mid, simple_expression;
+non terminal String           term_list_with, term, factor, number, selector;
+
+non terminal String           identifier_list, type, fp_section, fp_sections, formal_parameters;
+non terminal String           identifier_list_with, array_type, record_type;
+
+terminal                IF, ELSE, ELSIF, THEN, END, ARRAY, VAR, OF, WHILE, DO, RECORD;
+terminal                BEGIN, MODULE, PROCEDURE, CONST, MOD, DIV, OR, PLUS, MINUS;
+terminal                TIMES, SEMI, COMMA, LEFTP, RIGHTP, LEFTB, RIGHTB, DOT, COLON;
+terminal                EQ, NE, LT, LE, GT, GE, ASSIGN, AND, NOT;
+
+terminal String         IDENTIFIER, INTEGER;
+
+module                  ::= MODULE IDENTIFIER SEMI declarations begin END IDENTIFIER DOT       {: for (int i = 0; i < ccnt; ++i) {
+                                                                                                      graph.addEdge("c"+i, procedureMap.get(callSiteMap.get("c"+i)));
+                                                                                                  }
+                                                                                                  graph.show(); :};
+
+begin                   ::= BEGIN statement_sequence
+                        |
+                        ;
+declarations            ::= const_declaration type_declaration var_declaration procedure_declarations;
+
+const_declaration       ::= CONST const_expression SEMI
+                        |
+                        ;
+const_expression        ::= const_expression IDENTIFIER EQ expression SEMI 
+                        |   IDENTIFIER EQ expression 
+                        ;
+type_declaration        ::= type type_expression
+                        |
+                        ;
+type_expression         ::= type_expression IDENTIFIER EQ type SEMI
+                        |   IDENTIFIER EQ type SEMI
+                        ;
+var_declaration         ::= VAR var_expression
+                        |
+                        ;
+var_expression          ::= identifier_list COLON type SEMI var_expression
+                        |   identifier_list COLON type SEMI
+                        ;
+procedure_declarations  ::= procedure_declaration SEMI procedure_declarations
+                        |
+                        ;
+procedure_declaration   ::= procedure_heading SEMI procedure_body;
+
+procedure_body          ::= declarations begin END IDENTIFIER;
+
+procedure_heading       ::= PROCEDURE IDENTIFIER:i formal_parameters:fs {: currentProcedure = i; graph.addProcedure("f"+fcnt, i+getTypes(fs)); procedureMap.put(i, "f"+fcnt); ++fcnt; :};
+
+formal_parameters       ::= LEFTP fp_sections:fps RIGHTP        {: RESULT = "(" + fps + ")"; :}
+                        |                                       {: RESULT = ""; :}
+                        ;
+
+fp_sections             ::= fp_section:fp                       {: RESULT = fp; :}
+                        |   fp_section:fp SEMI fp_sections:fps  {: RESULT = fp + "; " + fps; :}
+                        |
+                        ;
+fp_section              ::= VAR identifier_list:is COLON type:t  {: RESULT = "VAR " + is + ": " + t; :}
+                        |   identifier_list:is COLON type:t          {: RESULT = is + ": " + t; :}
+                        ;
+type                    ::= IDENTIFIER:i                          {: RESULT = i; :}
+                        |   array_type:at                         {: RESULT = at; :}
+                        |   record_type:rt                        {: RESULT = rt; :}
+                        ;
+record_type             ::= RECORD field_list:fl field_list_with_semi:fls END {: RESULT = "RECORD " + fl + " " + fls + " END"; :};
+
+field_list              ::= identifier_list COLON type
+                        |
+                        ;
+field_list_with_semi    ::= SEMI field_list field_list_with_semi
+                        |
+                        ;
+array_type              ::= ARRAY expression:e OF type:t              {: RESULT = "ARRAY " + e + " OF " + t; :};
+
+identifier_list         ::= IDENTIFIER:i identifier_list_with:is   {: RESULT = i + is; :};
+
+identifier_list_with    ::= COMMA IDENTIFIER:i identifier_list_with:is   {: RESULT = ", " + i + is; :}
+                        |                                                {: RESULT = ""; :}
+                        ;
+statement_sequence      ::= statement statement_with_semi;
+
+statement_with_semi     ::= SEMI statement statement_with_semi
+                        |
+                        ;
+statement               ::= assignment
+                        |   procedure_call
+                        |   if_statement
+                        |   while_statement
+                        |
+                        ;
+while_statement         ::= WHILE expression DO statement_sequence END;
+
+if_statement            ::= IF expression THEN statement_sequence elsif_statement else_statement END;
+
+elsif_statement         ::= ELSIF expression THEN statement_sequence elsif_statement
+                        |
+                        ;
+else_statement          ::= ELSE statement_sequence
+                        |
+                        ;
+procedure_call          ::= IDENTIFIER:i actual_parameters:a    {: graph.addCallSite("c"+ccnt, currentProcedure+"()", i + a + ";"); callSiteMap.put("c"+ccnt, i); ++ccnt; :}
+                        |   IDENTIFIER:i                        {: graph.addCallSite("c"+ccnt, currentProcedure, i); callSiteMap.put("c"+ccnt, i); ++ccnt; :}
+                        ;
+actual_parameters       ::= LEFTP expression_list:el RIGHTP    {: RESULT = "(" + el + ")"; :};
+
+assignment              ::= IDENTIFIER:i selector:s ASSIGN expression:e        {: RESULT = i + s + ":=" + e; :};
+
+expression              ::= simple_expression:se comp_expression:ce       {: RESULT = se + ce; :};
+
+expression_list         ::= expression:e expression_list_with:elw             {: RESULT = e + elw; :}
+                        |                                               {: RESULT = ""; :}
+                        ;
+
+expression_list_with    ::= COMMA expression:e expression_list_with:elw       {: RESULT = ", " + e + elw; :}
+                        |                                                     {: RESULT = ""; :}
+                        ;
+
+comp                    ::= EQ          {: RESULT = "="; :}
+                        |   NE          {: RESULT = "#"; :}
+                        |   LT          {: RESULT = "<"; :}
+                        |   LE          {: RESULT = "<="; :}
+                        |   GT          {: RESULT = ">"; :}
+                        |   GE          {: RESULT = ">="; :}
+                        ;
+comp_expression         ::= comp:c simple_expression:se               {: RESULT = c + se; :}
+                        |                                             {: RESULT = ""; :}
+                        ;
+unary                   ::= PLUS                                      {: RESULT = "+"; :}
+                        |   MINUS                                     {: RESULT = "-"; :}
+                        |                                             {: RESULT = ""; :}
+                        ;
+binary_low              ::= PLUS                                      {: RESULT = "+"; :}
+                        |   MINUS                                     {: RESULT = "-"; :}
+                        |   OR                                        {: RESULT = "OR"; :}
+                        ;
+binary_mid              ::= TIMES                                     {: RESULT = "*"; :}
+                        |   DIV                                       {: RESULT = "DIV"; :}
+                        |   MOD                                       {: RESULT = "MOD"; :}
+                        |   AND                                       {: RESULT = "&"; :}
+                        ;
+simple_expression       ::= unary:u term:t term_list_with:tl           {: RESULT = u + t + tl; :};
+
+term_list_with          ::= binary_low:b term:t term_list_with:tl             {: RESULT = b + t + tl; :}
+                        |                                              {: RESULT = ""; :}
+                        ;
+term                    ::= factor:f1 binary_mid:bm factor:f2                   {: RESULT = f1 + bm + f2; :}
+                        |   factor:f                                            {: RESULT = f; :}
+                        ;
+factor                  ::= IDENTIFIER:i selector:s                     {: RESULT = i + s; :}
+                        |   number:n                                    {: RESULT = n; :}
+                        |   LEFTP expression:e RIGHTP                   {: RESULT = "(" + e + ")"; :}
+                        |   NOT factor:f                                {: RESULT = "~" + f; :}
+                        ;
+number                  ::= INTEGER:i                                   {: RESULT = i; :};
+
+selector                ::= DOT IDENTIFIER:i selector:s                     {: RESULT = "." + i + s; :}
+                        |   LEFTB expression:e RIGHTB selector:s            {: RESULT = "[" + e + "]" + s; :}
+                        |                                                   {: RESULT = ""; :}
+                        ;

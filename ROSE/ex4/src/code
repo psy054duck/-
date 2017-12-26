@@ -1,0 +1,457 @@
+private void module() throws Exception {
+	match(sym.MODULE);
+	match(sym.IDENTIFIER);
+	match(sym.SEMI);
+	declarations();
+	begin();
+	match(sym.END);
+	match(sym.IDENTIFIER);
+	match(sym.DOT);
+
+}
+
+private void begin() throws Exception {
+	if (lookahead.getType() == sym.BEGIN) {
+		match(sym.BEGIN);
+		statement_sequence();
+	}
+}
+
+private void declarations() throws Exception {
+	const_declaration();
+	type_declaration();
+	var_declaration();
+	procedure_declarations();
+
+}
+
+private void const_declaration() throws Exception {
+	if (lookahead.getType() == sym.CONST) {
+		match(sym.CONST);
+		const_expression();
+		match(sym.SEMI);
+	}
+}
+
+private void const_expression_prefix() throws Exception {
+	match(sym.IDENTIFIER);
+	match(sym.EQ);
+	expression();
+
+}
+
+private void const_expression_suffix() throws Exception {
+	if (lookahead.getType() == sym.SEMI) {
+		match(sym.SEMI);
+		const_expression();
+	}
+}
+
+private void const_expression() throws Exception {
+	const_expression_prefix();
+	const_expression_suffix();
+
+}
+
+private void type_declaration() throws Exception {
+	if (getFirst("type").contains(sym.terminalNames[lookahead.getType()])) {
+		type();
+		type_expression();
+	}
+}
+
+private void type_expression_prefix() throws Exception {
+	match(sym.IDENTIFIER);
+	match(sym.EQ);
+	type();
+	match(sym.SEMI);
+
+}
+
+private void type_expression_suffix() throws Exception {
+	if (getFirst("type_expression").contains(sym.terminalNames[lookahead.getType()])) {
+		type_expression();
+	}
+}
+
+private void type_expression() throws Exception {
+	type_expression_prefix();
+	type_expression_suffix();
+
+}
+
+private void var_declaration() throws Exception {
+	if (lookahead.getType() == sym.VAR) {
+		match(sym.VAR);
+		var_expression();
+	}
+}
+
+private void var_expression_suffix() throws Exception {
+	match(sym.COLON);
+	type();
+	match(sym.SEMI);
+
+}
+
+private void var_expression_prefix() throws Exception {
+	if (getFirst("var_expression").contains(sym.terminalNames[lookahead.getType()])) {
+		var_expression();
+	}
+}
+
+private void var_expression() throws Exception {
+	identifier_list();
+	var_expression_prefix();
+	var_expression_suffix();
+
+}
+
+private void procedure_declarations() throws Exception {
+	if (getFirst("procedure_declaration").contains(sym.terminalNames[lookahead.getType()])) {
+		procedure_declaration();
+		match(sym.SEMI);
+		procedure_declarations();
+	}
+}
+
+private void procedure_declaration() throws Exception {
+	procedure_heading();
+	match(sym.SEMI);
+	procedure_body();
+
+}
+
+private void procedure_body() throws Exception {
+	declarations();
+	begin();
+	match(sym.END);
+	match(sym.IDENTIFIER);
+
+}
+
+private void procedure_heading() throws Exception {
+	match(sym.PROCEDURE);
+	match(sym.IDENTIFIER);
+	formal_parameters();
+
+}
+
+private void formal_parameters() throws Exception {
+	if (lookahead.getType() == sym.LEFTP) {
+		match(sym.LEFTP);
+		fp_sections();
+		match(sym.RIGHTP);
+	}
+}
+
+private void fp_sections() throws Exception {
+	if (getFirst("fp_section").contains(sym.terminalNames[lookahead.getType()])) {
+		fp_section();
+		fp_sections_suffix();
+	}
+}
+
+private void fp_sections_suffix() throws Exception {
+	if (lookahead.getType() == sym.SEMI) {
+		match(sym.SEMI);
+		fp_sections();
+	}
+}
+
+private void fp_section() throws Exception {
+	if (lookahead.getType() == sym.VAR) {
+		match(sym.VAR);
+		identifier_list();
+		match(sym.COLON);
+		type();
+	} else {
+		identifier_list();
+		match(sym.COLON);
+		type();
+	}
+}
+
+private void type() throws Exception {
+	if (lookahead.getType() == sym.IDENTIFIER) {
+		match(sym.IDENTIFIER);
+	} else if (getFirst("array_type").contains(sym.terminalNames[lookahead.getType()])) {
+		array_type();
+	} else {
+		record_type();
+	}
+}
+
+private void record_type() throws Exception {
+	match(sym.RECORD);
+	field_list();
+	field_list_with_semi();
+	match(sym.END);
+
+}
+
+private void field_list() throws Exception {
+	if (getFirst("identifier_list").contains(sym.terminalNames[lookahead.getType()])) {
+		identifier_list();
+		match(sym.COLON);
+		type();
+	}
+}
+
+private void field_list_with_semi() throws Exception {
+	if (lookahead.getType() == sym.SEMI) {
+		match(sym.SEMI);
+		field_list();
+		field_list_with_semi();
+	}
+}
+
+private void array_type() throws Exception {
+	match(sym.ARRAY);
+	expression();
+	match(sym.OF);
+	type();
+
+}
+
+private void identifier_list() throws Exception {
+	match(sym.IDENTIFIER);
+	identifier_list_with();
+
+}
+
+private void identifier_list_with() throws Exception {
+	if (lookahead.getType() == sym.COMMA) {
+		match(sym.COMMA);
+		match(sym.IDENTIFIER);
+		identifier_list_with();
+	}
+}
+
+private void statement_sequence() throws Exception {
+	statement();
+	statement_with_semi();
+
+}
+
+private void statement_with_semi() throws Exception {
+	if (lookahead.getType() == sym.SEMI) {
+		match(sym.SEMI);
+		statement();
+		statement_with_semi();
+	}
+}
+
+private void statement() throws Exception {
+	if (getFirst("while_statement").contains(sym.terminalNames[lookahead.getType()])) {
+		while_statement();
+	} else if (getFirst("if_statement").contains(sym.terminalNames[lookahead.getType()])) {
+		if_statement();
+	} else if (lookahead.getType() == sym.IDENTIFIER) {
+		match(sym.IDENTIFIER);
+		statement_suffix();
+	}
+}
+
+private void statement_suffix() throws Exception {
+	if (getFirst("procedure_call").contains(sym.terminalNames[lookahead.getType()])) {
+		procedure_call();
+	} else {
+		assignment();
+	}
+}
+
+private void while_statement() throws Exception {
+	match(sym.WHILE);
+	expression();
+	match(sym.DO);
+	statement_sequence();
+	match(sym.END);
+
+}
+
+private void if_statement() throws Exception {
+	match(sym.IF);
+	expression();
+	match(sym.THEN);
+	statement_sequence();
+	elsif_statement();
+	else_statement();
+	match(sym.END);
+
+}
+
+private void elsif_statement() throws Exception {
+	if (lookahead.getType() == sym.ELSIF) {
+		match(sym.ELSIF);
+		expression();
+		match(sym.THEN);
+		statement_sequence();
+		elsif_statement();
+	}
+}
+
+private void else_statement() throws Exception {
+	if (lookahead.getType() == sym.ELSE) {
+		match(sym.ELSE);
+		statement_sequence();
+	}
+}
+
+private void procedure_call() throws Exception {
+	if (getFirst("actual_parameters").contains(sym.terminalNames[lookahead.getType()])) {
+		actual_parameters();
+	}
+}
+
+private void actual_parameters() throws Exception {
+	match(sym.LEFTP);
+	expression_list();
+	match(sym.RIGHTP);
+
+}
+
+private void assignment() throws Exception {
+	selector();
+	match(sym.ASSIGN);
+	expression();
+
+}
+
+private void expression() throws Exception {
+	simple_expression();
+	comp_expression();
+
+}
+
+private void expression_list() throws Exception {
+	if (getFirst("expression").contains(sym.terminalNames[lookahead.getType()])) {
+		expression();
+		expression_list_with();
+	}
+}
+
+private void expression_list_with() throws Exception {
+	if (lookahead.getType() == sym.COMMA) {
+		match(sym.COMMA);
+		expression();
+		expression_list_with();
+	}
+}
+
+private void comp() throws Exception {
+	if (lookahead.getType() == sym.NE) {
+		match(sym.NE);
+	} else if (lookahead.getType() == sym.LT) {
+		match(sym.LT);
+	} else if (lookahead.getType() == sym.LE) {
+		match(sym.LE);
+	} else if (lookahead.getType() == sym.GT) {
+		match(sym.GT);
+	} else if (lookahead.getType() == sym.EQ) {
+		match(sym.EQ);
+	} else {
+		match(sym.GE);
+	}
+}
+
+private void comp_expression() throws Exception {
+	if (getFirst("comp").contains(sym.terminalNames[lookahead.getType()])) {
+		comp();
+		simple_expression();
+	}
+}
+
+private void unary() throws Exception {
+	if (lookahead.getType() == sym.PLUS) {
+		match(sym.PLUS);
+	} else if (lookahead.getType() == sym.MINUS) {
+		match(sym.MINUS);
+	}
+}
+
+private void binary_low() throws Exception {
+	if (lookahead.getType() == sym.PLUS) {
+		match(sym.PLUS);
+	} else if (lookahead.getType() == sym.MINUS) {
+		match(sym.MINUS);
+	} else {
+		match(sym.OR);
+	}
+}
+
+private void binary_mid() throws Exception {
+	if (lookahead.getType() == sym.TIMES) {
+		match(sym.TIMES);
+	} else if (lookahead.getType() == sym.DIV) {
+		match(sym.DIV);
+	} else if (lookahead.getType() == sym.AND) {
+		match(sym.AND);
+	} else {
+		match(sym.MOD);
+	}
+}
+
+private void simple_expression() throws Exception {
+	unary();
+	term();
+	term_list_with();
+
+}
+
+private void term_list_with() throws Exception {
+	if (getFirst("binary_low").contains(sym.terminalNames[lookahead.getType()])) {
+		binary_low();
+		term();
+		term_list_with();
+	}
+}
+
+private void term() throws Exception {
+	factor();
+	term_suffix();
+
+}
+
+private void term_suffix() throws Exception {
+	if (getFirst("binary_mid").contains(sym.terminalNames[lookahead.getType()])) {
+		binary_mid();
+		factor();
+	}
+}
+
+private void factor() throws Exception {
+	if (lookahead.getType() == sym.LEFTP) {
+		match(sym.LEFTP);
+		expression();
+		match(sym.RIGHTP);
+	} else if (lookahead.getType() == sym.IDENTIFIER) {
+		match(sym.IDENTIFIER);
+		selector();
+	} else if (getFirst("number").contains(sym.terminalNames[lookahead.getType()])) {
+		number();
+	} else {
+		match(sym.NOT);
+		factor();
+	}
+}
+
+private void number() throws Exception {
+	match(sym.INTEGER);
+
+}
+
+private void selector() throws Exception {
+	if (lookahead.getType() == sym.DOT) {
+		match(sym.DOT);
+		match(sym.IDENTIFIER);
+		selector();
+	} else if (lookahead.getType() == sym.LEFTB) {
+		match(sym.LEFTB);
+		expression();
+		match(sym.RIGHTB);
+		selector();
+	}
+}
+
+True
