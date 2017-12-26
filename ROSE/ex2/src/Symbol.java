@@ -22,9 +22,9 @@ public class Symbol {
         String lineStr = "line:" + String.format("%3d", line);
         String columnStr = "column:" + String.format("%3d", column);
         if (! value.isEmpty()) {
-            return String.format("sym:%3d %15s%15s%10s: %s", type, lineStr, columnStr, "value", value);
+            return String.format("sym:%13s %15s%15s%10s: %s", sym.terminalNames[type], lineStr, columnStr, "value", value);
         } else {
-            return String.format("sym:%3d %15s%15s", type, lineStr, columnStr);
+            return String.format("sym:%13s %15s%15s", sym.terminalNames[type], lineStr, columnStr);
         }
     }
 

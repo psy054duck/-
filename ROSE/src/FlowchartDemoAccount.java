@@ -3,6 +3,8 @@
  * Science, SUN YAT-SEN UNIVERSITY. All rights reserved.
 **/
 
+import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.geometry.PrimitiveState;
+
 import flowchart.*;
 
 /**
@@ -49,6 +51,8 @@ public class FlowchartDemoAccount {
 		text = "log(\"Perform getBalance.\");";
 		proc.add(new PrimitiveStatement(text));
 
+		Procedure p = accModule.add("hh(i: INTEGER)");
+		p.add(new PrimitiveStatement("6666"));
 		// Show the flowchart for each procedure in the module
 		accModule.show();
 	}

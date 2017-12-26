@@ -22,4 +22,7 @@ def gen():
                     i += 1
         program += '\n}\n'
         fp.write(program)
+
+if __name__ == '__main__':
+    gen()
         

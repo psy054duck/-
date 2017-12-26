@@ -48,9 +48,6 @@ Comment         = "(*" ~"*)"
     "mod"                           { return symbol(Type.MOD); }
     "div"                           { return symbol(Type.DIV); }
     "or"                            { return symbol(Type.OR); }
-    "write"                         { return symbol(Type.WRITE); }
-    "writeln"                       { return symbol(Type.WRITELN); }
-    "read"                          { return symbol(Type.READ); }
 
     "+"                             { return symbol(Type.PLUS); }
     "-"                             { return symbol(Type.MINUS); }

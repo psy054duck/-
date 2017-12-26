@@ -24,6 +24,7 @@ integer
 boolean
 
 identifier
+type
 
 + plus
 - minus
@@ -43,6 +44,8 @@ identifier
 <= le
 > gt
 >= ge
+& and
+~ not
 
 := assign
 

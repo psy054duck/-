@@ -1,63 +1,22 @@
 (* Correct program *)
 MODULE Sample;
-	PROCEDURE CalculateGPA;
-		VAR n, i, result, numerator, denominator: INTEGER;
-		VAR Score, Credit: INTEGER;
-		
-		Read(n);
-		i := 076;
-		WHILE i < n DO
-			Read(Score); Read(Credit);
-			numerator = numerator + Score * Credit;
-			denominator = denominator + Credit;
-		END;
-		
-		Write(numerator DIV denominator);
-	END CalculateGPA;
-	
-	PROCEDURE Abs;
-		VAR num: INTEGER;
-		
-		Read(num);
-		IF num < 0 THEN
-			num = -num;
-		END;
-		
-		Write(num);
-	END Abs;
-	
-	PROCEDURE FindBest:
-		TYPE Student = RECORD
-			id: INTEGER;
-			gpa: INTEGER;
-		END;
-		VAR student: Student;
-		VAR n, i, bestID, bestGPA: INTEGER;
-		
-		Read(n);
-		i := 0;
-		bestID := 0;
-		bestGPA := -1;
-		
-		WHILE i < n DO
-			Read(student.id);
-			Read(student.gpa);
-			
-			IF student.gpa > bestGPA THEN
-				bestGPA := student.gpa;
-				bestID := student.id;
-			END;
-		END;
-		
-		Writeln(student.id);
-		Writeln(student.gpa)
-	END FindBest;
-	
-	PROCEDURE isEven;
-		VAR num: INTEGER;
-		
-		Read(num);
-		
-		IF num MOD 2 = 
-	END isEven;
+    PROCEDURE Sum(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);
+        VAR i: INTEGER;
+    BEGIN
+        res := 0;
+        i := 0;
+        WHILE i < num:
+            res = res + data[i];
+        END;
+    END Sum;
+    
+    PROCEDURE Average(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);
+        VAR sum, i: INTEGER;
+    BEGIN
+        sum := 0;
+        i := 0;
+        Sum(data, num, sum);
+        res := sum DIV num;
+    END Average;
+
 END Sample.
