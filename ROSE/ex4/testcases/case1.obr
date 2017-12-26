@@ -11,6 +11,23 @@ MODULE Sample;
             res := res + data[i];
         END;
     END Sum;
+
+    PROCEDURE Sort(data: ARRAY 100 OF INTEGER; num: INTEGER);
+        VAR i, j, max, tmp: INTEGER;
+    BEGIN
+        WHILE i < num DO
+            j := i + 1;
+            max := i;
+            WHILE j < num DO
+                IF data[j] > data[max] THEN
+                    max := j;
+                END
+            END;
+            tmp := data[max];
+            data[max] := data[i];
+            data[i] := tmp;
+        END
+    END Sort;
     
     PROCEDURE Average(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);
         VAR sum, i: INTEGER;
@@ -41,5 +58,8 @@ MODULE Sample;
     PROCEDURE d(i: INTEGER; j: INTEGER);
     BEGIN
         y := i * j;
+        IF y > 10 THEN
+            y := y - 10;
+        END
     END d;
 END Sample.

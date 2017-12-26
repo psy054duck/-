@@ -3,7 +3,9 @@ import java.io.*;
 import java.util.regex.*;
 import flowchart.*;
 
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+
+
+import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.geometry.PrimitiveState;
 
 public class OberonParser {
     private OberonScanner scanner;
@@ -12,6 +14,7 @@ public class OberonParser {
     private HashMap<String, Set<String>> _first;
     private HashMap<String, Set<String>> _follow;
     private HashMap<String, Set<String>> _grammar;
+    private Stack<Scope> scopeStack;
     private Module module;
 
     public OberonParser(String input, String grammar) throws Exception {
@@ -21,12 +24,13 @@ public class OberonParser {
         _first = new HashMap<String, Set<String>>();
         _follow = new HashMap<String, Set<String>>();
         _grammar = new HashMap<>();
+        scopeStack = new Stack<>();
         setGrammar(grammar);
         calFollow();
     }
 
     public void parse() throws Exception {
-        System.out.println(module());
+        module();
         module.show();
     }
 
@@ -34,6 +38,9 @@ public class OberonParser {
         // System.out.println(lookahead);
         if (lookahead.getType() == expected) {
             String res = lookahead.getValue();
+            if (res == "") {
+                res = sym.terminalNames[lookahead.getType()];
+            }
             lookahead = scanner.yylex();
             return res;
         } else {
@@ -41,6 +48,7 @@ public class OberonParser {
             System.out.println(sym.terminalNames[expected]);
             System.out.print("Lookahead: ");
             System.out.println(sym.terminalNames[lookahead.getType()]);
+            System.out.println(lookahead);
             throw new Exception();
         }
     }
@@ -329,7 +337,7 @@ public class OberonParser {
     private String procedure_declaration() throws Exception {
         String res = "";
         res += procedure_heading();
-        module.add(res);
+        scopeStack.push(new Scope(module.add(res)));
         res += match(sym.SEMI);
         res += procedure_body();
     
@@ -472,15 +480,15 @@ public class OberonParser {
         String res = "";
         res += statement();
         res += statement_with_semi();
-    
+        
         return res;
     }
     
     private String statement_with_semi() throws Exception {
         String res = "";
         if (lookahead.getType() == sym.SEMI) {
-            res += match(sym.SEMI);
-            res += statement();
+            match(sym.SEMI);
+            res += statement() + "\n";
             res += statement_with_semi();
         }
         return res;
@@ -495,6 +503,7 @@ public class OberonParser {
         } else if (lookahead.getType() == sym.IDENTIFIER) {
             res += match(sym.IDENTIFIER);
             res += statement_suffix();
+            scopeStack.peek().add(new PrimitiveStatement(res));
         }
         return res;
     }
@@ -511,19 +520,22 @@ public class OberonParser {
     
     private String while_statement() throws Exception {
         String res = "";
-        res += match(sym.WHILE);
+        match(sym.WHILE);
         res += expression();
-        res += match(sym.DO);
-        res += statement_sequence();
-        res += match(sym.END);
-    
+        WhileStatement whileSmt = new WhileStatement(res);
+        scopeStack.peek().add(whileSmt);
+        match(sym.DO);
+        scopeStack.push(new Scope(whileSmt.getLoopBody()));
+        statement_sequence();
+        match(sym.END);
+        scopeStack.pop();
         return res;
     }
     
     private String if_statement() throws Exception {
         String res = "";
         res += match(sym.IF);
-        res += expression();
+        expression();
         res += match(sym.THEN);
         res += statement_sequence();
         res += elsif_statement();
@@ -574,7 +586,7 @@ public class OberonParser {
     private String assignment() throws Exception {
         String res = "";
         res += selector();
-        res += match(sym.ASSIGN);
+        res += " " + match(sym.ASSIGN) + " ";
         res += expression();
     
         return res;
@@ -608,7 +620,7 @@ public class OberonParser {
     }
     
     private String comp() throws Exception {
-        String res = "";
+        String res = " ";
         if (lookahead.getType() == sym.LE) {
             res += match(sym.LE);
         } else if (lookahead.getType() == sym.LT) {
@@ -622,7 +634,7 @@ public class OberonParser {
         } else {
             res += match(sym.NE);
         }
-        return res;
+        return res + " ";
     }
     
     private String comp_expression() throws Exception {
@@ -645,7 +657,7 @@ public class OberonParser {
     }
     
     private String binary_low() throws Exception {
-        String res = "";
+        String res = " ";
         if (lookahead.getType() == sym.OR) {
             res += match(sym.OR);
         } else if (lookahead.getType() == sym.PLUS) {
@@ -653,11 +665,11 @@ public class OberonParser {
         } else {
             res += match(sym.MINUS);
         }
-        return res;
+        return res + " ";
     }
     
     private String binary_mid() throws Exception {
-        String res = "";
+        String res = " ";
         if (lookahead.getType() == sym.TIMES) {
             res += match(sym.TIMES);
         } else if (lookahead.getType() == sym.DIV) {
@@ -667,7 +679,7 @@ public class OberonParser {
         } else {
             res += match(sym.AND);
         }
-        return res;
+        return res + " ";
     }
     
     private String simple_expression() throws Exception {
@@ -675,7 +687,6 @@ public class OberonParser {
         res += unary();
         res += term();
         res += term_list_with();
-    
         return res;
     }
     
@@ -749,5 +760,26 @@ public class OberonParser {
     public static void main(String[] argv) throws Exception {
         OberonParser parser = new OberonParser("../testcases/case1.obr", "../src/grammar");
         parser.parse();
+    }
+}
+
+class Scope {
+    Procedure procedure;
+    StatementSequence smtSequence;
+    
+    public Scope(Procedure p) {
+        procedure = p;
+    }
+
+    public Scope(StatementSequence s) {
+        smtSequence = s;
+    }
+
+    public void add(AbstractStatement p) {
+        if (procedure != null) {
+            procedure.add(p);
+        } else {
+            smtSequence.add(p);
+        }
     }
 }
