@@ -60,6 +60,31 @@ MODULE Sample;
         y := i * j;
         IF y > 10 THEN
             y := y - 10;
-        END
+        END;
     END d;
+
+    PROCEDURE testIf(a: INTEGER; b: INTEGER; c: INTEGER);
+        VAR max: INTEGER;
+    BEGIN
+        IF a > b THEN
+            IF a > c THEN
+                max := a;
+            ELSIF a * a < 0 THEN
+                max := -1;      
+            ELSE
+                max := c;
+            END;
+            max := 1;
+        ELSIF b > c THEN
+            IF b * b < 0 THEN
+                max := -1;      
+            ELSE
+                max := b;
+            END;
+            max := 2;
+        ELSE
+            max := c;
+        END
+    END testIF;
+
 END Sample.

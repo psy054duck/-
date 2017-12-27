@@ -535,9 +535,13 @@ public class OberonParser {
     private String if_statement() throws Exception {
         String res = "";
         res += match(sym.IF);
-        expression();
+        IfStatement ifSmt = new IfStatement(expression());
+        scopeStack.peek().add(ifSmt);
+        scopeStack.push(new Scope(ifSmt.getFalseBody()));
+        scopeStack.push(new Scope(ifSmt.getTrueBody()));
         res += match(sym.THEN);
         res += statement_sequence();
+        scopeStack.pop();
         res += elsif_statement();
         res += else_statement();
         res += match(sym.END);
@@ -549,9 +553,14 @@ public class OberonParser {
         String res = "";
         if (lookahead.getType() == sym.ELSIF) {
             res += match(sym.ELSIF);
-            res += expression();
+            IfStatement ifSmt = new IfStatement(expression());
+            scopeStack.peek().add(ifSmt);
+            scopeStack.push(new Scope(ifSmt.getTrueBody()));
             res += match(sym.THEN);
             res += statement_sequence();
+            scopeStack.pop();
+            scopeStack.pop();
+            scopeStack.push(new Scope(ifSmt.getFalseBody()));
             res += elsif_statement();
         }
         return res;
@@ -563,6 +572,7 @@ public class OberonParser {
             res += match(sym.ELSE);
             res += statement_sequence();
         }
+        scopeStack.pop();
         return res;
     }
     
