@@ -1,0 +1,425 @@
+Type:           12        line:  2     column:  1
+Type:           23        line:  2     column:  8     value: Sample
+Type:           28        line:  2     column: 14     value: ;
+Type:           23        line:  3     column:  5     value: x
+Type:           29        line:  3     column:  6     value: ,
+Type:           23        line:  3     column:  8     value: y
+Type:           35        line:  3     column:  9     value: :
+Type:           23        line:  3     column: 11     value: INTEGER
+Type:           28        line:  3     column: 18     value: ;
+Type:           13        line:  5     column:  5
+Type:           23        line:  5     column: 15     value: Sum
+Type:           30        line:  5     column: 18     value: (
+Type:           23        line:  5     column: 19     value: data
+Type:           35        line:  5     column: 23     value: :
+Type:            5        line:  5     column: 25
+Type:           21        line:  5     column: 31     value: 100
+Type:            7        line:  5     column: 35
+Type:           23        line:  5     column: 38     value: INTEGER
+Type:           28        line:  5     column: 45     value: ;
+Type:           23        line:  5     column: 47     value: num
+Type:           35        line:  5     column: 50     value: :
+Type:           23        line:  5     column: 52     value: INTEGER
+Type:           28        line:  5     column: 59     value: ;
+Type:            6        line:  5     column: 61
+Type:           23        line:  5     column: 65     value: res
+Type:           35        line:  5     column: 68     value: :
+Type:           23        line:  5     column: 70     value: INTEGER
+Type:           31        line:  5     column: 77     value: )
+Type:           28        line:  5     column: 78     value: ;
+Type:            6        line:  6     column:  9
+Type:           23        line:  6     column: 13     value: i
+Type:           35        line:  6     column: 14     value: :
+Type:           23        line:  6     column: 16     value: INTEGER
+Type:           28        line:  6     column: 23     value: ;
+Type:           11        line:  7     column:  5
+Type:           23        line:  8     column:  9     value: res
+Type:           44        line:  8     column: 13     value: :=
+Type:           21        line:  8     column: 16     value: 0
+Type:           28        line:  8     column: 17     value: ;
+Type:           23        line:  9     column:  9     value: i
+Type:           44        line:  9     column: 11     value: :=
+Type:           21        line:  9     column: 14     value: 0
+Type:           28        line:  9     column: 15     value: ;
+Type:            8        line: 10     column:  9
+Type:           23        line: 10     column: 15     value: i
+Type:           38        line: 10     column: 17     value: &lt
+Type:           23        line: 10     column: 19     value: num
+Type:            9        line: 10     column: 23
+Type:           23        line: 11     column: 13     value: res
+Type:           44        line: 11     column: 17     value: :=
+Type:           23        line: 11     column: 20     value: res
+Type:           25        line: 11     column: 24     value: +
+Type:           23        line: 11     column: 26     value: data
+Type:           32        line: 11     column: 30     value: [
+Type:           23        line: 11     column: 31     value: i
+Type:           33        line: 11     column: 32     value: ]
+Type:           28        line: 11     column: 33     value: ;
+Type:            4        line: 12     column:  9
+Type:           28        line: 12     column: 12     value: ;
+Type:            4        line: 13     column:  5
+Type:           23        line: 13     column:  9     value: Sum
+Type:           28        line: 13     column: 12     value: ;
+Type:           13        line: 15     column:  5
+Type:           23        line: 15     column: 15     value: Sort
+Type:           30        line: 15     column: 19     value: (
+Type:           23        line: 15     column: 20     value: data
+Type:           35        line: 15     column: 24     value: :
+Type:            5        line: 15     column: 26
+Type:           21        line: 15     column: 32     value: 100
+Type:            7        line: 15     column: 36
+Type:           23        line: 15     column: 39     value: INTEGER
+Type:           28        line: 15     column: 46     value: ;
+Type:           23        line: 15     column: 48     value: num
+Type:           35        line: 15     column: 51     value: :
+Type:           23        line: 15     column: 53     value: INTEGER
+Type:           31        line: 15     column: 60     value: )
+Type:           28        line: 15     column: 61     value: ;
+Type:            6        line: 16     column:  9
+Type:           23        line: 16     column: 13     value: i
+Type:           29        line: 16     column: 14     value: ,
+Type:           23        line: 16     column: 16     value: j
+Type:           29        line: 16     column: 17     value: ,
+Type:           23        line: 16     column: 19     value: max
+Type:           29        line: 16     column: 22     value: ,
+Type:           23        line: 16     column: 24     value: tmp
+Type:           35        line: 16     column: 27     value: :
+Type:           23        line: 16     column: 29     value: INTEGER
+Type:           28        line: 16     column: 36     value: ;
+Type:           11        line: 17     column:  5
+Type:            8        line: 18     column:  9
+Type:           23        line: 18     column: 15     value: i
+Type:           38        line: 18     column: 17     value: &lt
+Type:           23        line: 18     column: 19     value: num
+Type:            9        line: 18     column: 23
+Type:           23        line: 19     column: 13     value: j
+Type:           44        line: 19     column: 15     value: :=
+Type:           23        line: 19     column: 18     value: i
+Type:           25        line: 19     column: 20     value: +
+Type:           21        line: 19     column: 22     value: 1
+Type:           28        line: 19     column: 23     value: ;
+Type:           23        line: 20     column: 13     value: max
+Type:           44        line: 20     column: 17     value: :=
+Type:           23        line: 20     column: 20     value: i
+Type:           28        line: 20     column: 21     value: ;
+Type:            8        line: 21     column: 13
+Type:           23        line: 21     column: 19     value: j
+Type:           38        line: 21     column: 21     value: &lt
+Type:           23        line: 21     column: 23     value: num
+Type:            9        line: 21     column: 27
+Type:            0        line: 22     column: 17
+Type:           23        line: 22     column: 20     value: data
+Type:           32        line: 22     column: 24     value: [
+Type:           23        line: 22     column: 25     value: j
+Type:           33        line: 22     column: 26     value: ]
+Type:           40        line: 22     column: 28     value: &gt
+Type:           23        line: 22     column: 30     value: data
+Type:           32        line: 22     column: 34     value: [
+Type:           23        line: 22     column: 35     value: max
+Type:           33        line: 22     column: 38     value: ]
+Type:            3        line: 22     column: 40
+Type:           23        line: 23     column: 21     value: max
+Type:           44        line: 23     column: 25     value: :=
+Type:           23        line: 23     column: 28     value: j
+Type:           28        line: 23     column: 29     value: ;
+Type:            4        line: 24     column: 17
+Type:            4        line: 25     column: 13
+Type:           28        line: 25     column: 16     value: ;
+Type:           23        line: 26     column: 13     value: tmp
+Type:           44        line: 26     column: 17     value: :=
+Type:           23        line: 26     column: 20     value: data
+Type:           32        line: 26     column: 24     value: [
+Type:           23        line: 26     column: 25     value: max
+Type:           33        line: 26     column: 28     value: ]
+Type:           28        line: 26     column: 29     value: ;
+Type:           23        line: 27     column: 13     value: data
+Type:           32        line: 27     column: 17     value: [
+Type:           23        line: 27     column: 18     value: max
+Type:           33        line: 27     column: 21     value: ]
+Type:           44        line: 27     column: 23     value: :=
+Type:           23        line: 27     column: 26     value: data
+Type:           32        line: 27     column: 30     value: [
+Type:           23        line: 27     column: 31     value: i
+Type:           33        line: 27     column: 32     value: ]
+Type:           28        line: 27     column: 33     value: ;
+Type:           23        line: 28     column: 13     value: data
+Type:           32        line: 28     column: 17     value: [
+Type:           23        line: 28     column: 18     value: i
+Type:           33        line: 28     column: 19     value: ]
+Type:           44        line: 28     column: 21     value: :=
+Type:           23        line: 28     column: 24     value: tmp
+Type:           28        line: 28     column: 27     value: ;
+Type:            4        line: 29     column:  9
+Type:            4        line: 30     column:  5
+Type:           23        line: 30     column:  9     value: Sort
+Type:           28        line: 30     column: 13     value: ;
+Type:           13        line: 32     column:  5
+Type:           23        line: 32     column: 15     value: Average
+Type:           30        line: 32     column: 22     value: (
+Type:           23        line: 32     column: 23     value: data
+Type:           35        line: 32     column: 27     value: :
+Type:            5        line: 32     column: 29
+Type:           21        line: 32     column: 35     value: 100
+Type:            7        line: 32     column: 39
+Type:           23        line: 32     column: 42     value: INTEGER
+Type:           28        line: 32     column: 49     value: ;
+Type:           23        line: 32     column: 51     value: num
+Type:           35        line: 32     column: 54     value: :
+Type:           23        line: 32     column: 56     value: INTEGER
+Type:           28        line: 32     column: 63     value: ;
+Type:            6        line: 32     column: 65
+Type:           23        line: 32     column: 69     value: res
+Type:           35        line: 32     column: 72     value: :
+Type:           23        line: 32     column: 74     value: INTEGER
+Type:           31        line: 32     column: 81     value: )
+Type:           28        line: 32     column: 82     value: ;
+Type:            6        line: 33     column:  9
+Type:           23        line: 33     column: 13     value: sum
+Type:           29        line: 33     column: 16     value: ,
+Type:           23        line: 33     column: 18     value: i
+Type:           35        line: 33     column: 19     value: :
+Type:           23        line: 33     column: 21     value: INTEGER
+Type:           28        line: 33     column: 28     value: ;
+Type:           11        line: 34     column:  5
+Type:           23        line: 35     column:  9     value: sum
+Type:           44        line: 35     column: 13     value: :=
+Type:           21        line: 35     column: 16     value: 0
+Type:           28        line: 35     column: 17     value: ;
+Type:           23        line: 36     column:  9     value: i
+Type:           44        line: 36     column: 11     value: :=
+Type:           21        line: 36     column: 14     value: 0
+Type:           28        line: 36     column: 15     value: ;
+Type:           23        line: 37     column:  9     value: Sum
+Type:           30        line: 37     column: 12     value: (
+Type:           23        line: 37     column: 13     value: data
+Type:           29        line: 37     column: 17     value: ,
+Type:           23        line: 37     column: 19     value: num
+Type:           29        line: 37     column: 22     value: ,
+Type:           23        line: 37     column: 24     value: sum
+Type:           31        line: 37     column: 27     value: )
+Type:           28        line: 37     column: 28     value: ;
+Type:           23        line: 38     column:  9     value: res
+Type:           44        line: 38     column: 13     value: :=
+Type:           23        line: 38     column: 16     value: sum
+Type:           16        line: 38     column: 20
+Type:           23        line: 38     column: 24     value: num
+Type:           28        line: 38     column: 27     value: ;
+Type:            4        line: 39     column:  5
+Type:           23        line: 39     column:  9     value: Average
+Type:           28        line: 39     column: 16     value: ;
+Type:           13        line: 41     column:  5
+Type:           23        line: 41     column: 15     value: a
+Type:           28        line: 41     column: 16     value: ;
+Type:           11        line: 42     column:  5
+Type:           23        line: 43     column:  9     value: b
+Type:           30        line: 43     column: 10     value: (
+Type:           23        line: 43     column: 11     value: x
+Type:           29        line: 43     column: 12     value: ,
+Type:           21        line: 43     column: 14     value: 1
+Type:           31        line: 43     column: 15     value: )
+Type:           28        line: 43     column: 16     value: ;
+Type:           23        line: 44     column:  9     value: c
+Type:           30        line: 44     column: 10     value: (
+Type:           23        line: 44     column: 11     value: y
+Type:           29        line: 44     column: 12     value: ,
+Type:           21        line: 44     column: 14     value: 2
+Type:           31        line: 44     column: 15     value: )
+Type:           28        line: 44     column: 16     value: ;
+Type:            4        line: 45     column:  5
+Type:           23        line: 45     column:  9     value: a
+Type:           28        line: 45     column: 10     value: ;
+Type:           13        line: 47     column:  5
+Type:           23        line: 47     column: 15     value: b
+Type:           30        line: 47     column: 16     value: (
+Type:           23        line: 47     column: 17     value: i
+Type:           35        line: 47     column: 18     value: :
+Type:           23        line: 47     column: 20     value: INTEGER
+Type:           28        line: 47     column: 27     value: ;
+Type:           23        line: 47     column: 29     value: j
+Type:           35        line: 47     column: 30     value: :
+Type:           23        line: 47     column: 32     value: INTEGER
+Type:           31        line: 47     column: 39     value: )
+Type:           28        line: 47     column: 40     value: ;
+Type:           11        line: 48     column:  5
+Type:           23        line: 49     column:  9     value: x
+Type:           44        line: 49     column: 11     value: :=
+Type:           23        line: 49     column: 14     value: i
+Type:           25        line: 49     column: 16     value: +
+Type:           23        line: 49     column: 18     value: j
+Type:           28        line: 49     column: 19     value: ;
+Type:            4        line: 50     column:  5
+Type:           23        line: 50     column:  9     value: b
+Type:           28        line: 50     column: 10     value: ;
+Type:           13        line: 52     column:  5
+Type:           23        line: 52     column: 15     value: c
+Type:           30        line: 52     column: 16     value: (
+Type:           23        line: 52     column: 17     value: i
+Type:           35        line: 52     column: 18     value: :
+Type:           23        line: 52     column: 20     value: INTEGER
+Type:           28        line: 52     column: 27     value: ;
+Type:           23        line: 52     column: 29     value: j
+Type:           35        line: 52     column: 30     value: :
+Type:           23        line: 52     column: 32     value: INTEGER
+Type:           31        line: 52     column: 39     value: )
+Type:           28        line: 52     column: 40     value: ;
+Type:           11        line: 53     column:  5
+Type:           23        line: 54     column:  9     value: b
+Type:           30        line: 54     column: 10     value: (
+Type:           23        line: 54     column: 11     value: x
+Type:           25        line: 54     column: 13     value: +
+Type:           23        line: 54     column: 15     value: i
+Type:           29        line: 54     column: 16     value: ,
+Type:           21        line: 54     column: 18     value: 2
+Type:           27        line: 54     column: 20     value: *
+Type:           23        line: 54     column: 22     value: j
+Type:           31        line: 54     column: 23     value: )
+Type:           28        line: 54     column: 24     value: ;
+Type:           23        line: 55     column:  9     value: d
+Type:           30        line: 55     column: 10     value: (
+Type:           21        line: 55     column: 11     value: 2
+Type:           27        line: 55     column: 13     value: *
+Type:           23        line: 55     column: 15     value: i
+Type:           29        line: 55     column: 16     value: ,
+Type:           23        line: 55     column: 18     value: y
+Type:           25        line: 55     column: 20     value: +
+Type:           23        line: 55     column: 22     value: j
+Type:           31        line: 55     column: 23     value: )
+Type:           28        line: 55     column: 24     value: ;
+Type:            4        line: 56     column:  5
+Type:           23        line: 56     column:  9     value: c
+Type:           28        line: 56     column: 10     value: ;
+Type:           13        line: 58     column:  5
+Type:           23        line: 58     column: 15     value: d
+Type:           30        line: 58     column: 16     value: (
+Type:           23        line: 58     column: 17     value: i
+Type:           35        line: 58     column: 18     value: :
+Type:           23        line: 58     column: 20     value: INTEGER
+Type:           28        line: 58     column: 27     value: ;
+Type:           23        line: 58     column: 29     value: j
+Type:           35        line: 58     column: 30     value: :
+Type:           23        line: 58     column: 32     value: INTEGER
+Type:           31        line: 58     column: 39     value: )
+Type:           28        line: 58     column: 40     value: ;
+Type:           11        line: 59     column:  5
+Type:           23        line: 60     column:  9     value: y
+Type:           44        line: 60     column: 11     value: :=
+Type:           23        line: 60     column: 14     value: i
+Type:           27        line: 60     column: 16     value: *
+Type:           23        line: 60     column: 18     value: j
+Type:           28        line: 60     column: 19     value: ;
+Type:            0        line: 61     column:  9
+Type:           23        line: 61     column: 12     value: y
+Type:           40        line: 61     column: 14     value: &gt
+Type:           21        line: 61     column: 16     value: 10
+Type:            3        line: 61     column: 19
+Type:           23        line: 62     column: 13     value: y
+Type:           44        line: 62     column: 15     value: :=
+Type:           23        line: 62     column: 18     value: y
+Type:           26        line: 62     column: 20     value: -
+Type:           21        line: 62     column: 22     value: 10
+Type:           28        line: 62     column: 24     value: ;
+Type:            4        line: 63     column:  9
+Type:           28        line: 63     column: 12     value: ;
+Type:            4        line: 64     column:  5
+Type:           23        line: 64     column:  9     value: d
+Type:           28        line: 64     column: 10     value: ;
+Type:           13        line: 66     column:  5
+Type:           23        line: 66     column: 15     value: testIf
+Type:           30        line: 66     column: 21     value: (
+Type:           23        line: 66     column: 22     value: a
+Type:           35        line: 66     column: 23     value: :
+Type:           23        line: 66     column: 25     value: INTEGER
+Type:           28        line: 66     column: 32     value: ;
+Type:           23        line: 66     column: 34     value: b
+Type:           35        line: 66     column: 35     value: :
+Type:           23        line: 66     column: 37     value: INTEGER
+Type:           28        line: 66     column: 44     value: ;
+Type:           23        line: 66     column: 46     value: c
+Type:           35        line: 66     column: 47     value: :
+Type:           23        line: 66     column: 49     value: INTEGER
+Type:           31        line: 66     column: 56     value: )
+Type:           28        line: 66     column: 57     value: ;
+Type:            6        line: 67     column:  9
+Type:           23        line: 67     column: 13     value: max
+Type:           35        line: 67     column: 16     value: :
+Type:           23        line: 67     column: 18     value: INTEGER
+Type:           28        line: 67     column: 25     value: ;
+Type:           11        line: 68     column:  5
+Type:            0        line: 69     column:  9
+Type:           23        line: 69     column: 12     value: a
+Type:           40        line: 69     column: 14     value: &gt
+Type:           23        line: 69     column: 16     value: b
+Type:            3        line: 69     column: 18
+Type:            0        line: 70     column: 13
+Type:           23        line: 70     column: 16     value: a
+Type:           40        line: 70     column: 18     value: &gt
+Type:           23        line: 70     column: 20     value: c
+Type:            3        line: 70     column: 22
+Type:           23        line: 71     column: 17     value: max
+Type:           44        line: 71     column: 21     value: :=
+Type:           23        line: 71     column: 24     value: a
+Type:           28        line: 71     column: 25     value: ;
+Type:            2        line: 72     column: 13
+Type:           23        line: 72     column: 19     value: a
+Type:           27        line: 72     column: 21     value: *
+Type:           23        line: 72     column: 23     value: a
+Type:           38        line: 72     column: 25     value: &lt
+Type:           21        line: 72     column: 27     value: 0
+Type:            3        line: 72     column: 29
+Type:           23        line: 73     column: 17     value: max
+Type:           44        line: 73     column: 21     value: :=
+Type:           26        line: 73     column: 24     value: -
+Type:           21        line: 73     column: 25     value: 1
+Type:           28        line: 73     column: 26     value: ;
+Type:            1        line: 74     column: 13
+Type:           23        line: 75     column: 17     value: max
+Type:           44        line: 75     column: 21     value: :=
+Type:           23        line: 75     column: 24     value: c
+Type:           28        line: 75     column: 25     value: ;
+Type:            4        line: 76     column: 13
+Type:           28        line: 76     column: 16     value: ;
+Type:           23        line: 77     column: 13     value: max
+Type:           44        line: 77     column: 17     value: :=
+Type:           21        line: 77     column: 20     value: 1
+Type:           28        line: 77     column: 21     value: ;
+Type:            2        line: 78     column:  9
+Type:           23        line: 78     column: 15     value: b
+Type:           40        line: 78     column: 17     value: &gt
+Type:           23        line: 78     column: 19     value: c
+Type:            3        line: 78     column: 21
+Type:            0        line: 79     column: 13
+Type:           23        line: 79     column: 16     value: b
+Type:           27        line: 79     column: 18     value: *
+Type:           23        line: 79     column: 20     value: b
+Type:           38        line: 79     column: 22     value: &lt
+Type:           21        line: 79     column: 24     value: 0
+Type:            3        line: 79     column: 26
+Type:           23        line: 80     column: 17     value: max
+Type:           44        line: 80     column: 21     value: :=
+Type:           26        line: 80     column: 24     value: -
+Type:           21        line: 80     column: 25     value: 1
+Type:           28        line: 80     column: 26     value: ;
+Type:            1        line: 81     column: 13
+Type:           23        line: 82     column: 17     value: max
+Type:           44        line: 82     column: 21     value: :=
+Type:           23        line: 82     column: 24     value: b
+Type:           28        line: 82     column: 25     value: ;
+Type:            4        line: 83     column: 13
+Type:           28        line: 83     column: 16     value: ;
+Type:           23        line: 84     column: 13     value: max
+Type:           44        line: 84     column: 17     value: :=
+Type:           21        line: 84     column: 20     value: 2
+Type:           28        line: 84     column: 21     value: ;
+Type:            1        line: 85     column:  9
+Type:           23        line: 86     column: 13     value: max
+Type:           44        line: 86     column: 17     value: :=
+Type:           23        line: 86     column: 20     value: c
+Type:           28        line: 86     column: 21     value: ;
+Type:            4        line: 87     column:  9
+Type:            4        line: 88     column:  5
+Type:           23        line: 88     column:  9     value: testIF
+Type:           28        line: 88     column: 15     value: ;
+Type:            4        line: 90     column:  1
+Type:           23        line: 90     column:  5     value: Sample
+Type:           34        line: 90     column: 11     value: .
+Type:           45        line: 90     column: 12

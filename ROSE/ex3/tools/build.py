@@ -1,8 +1,14 @@
 import os
 from gen_parser import *
 
+def build_lexer():
+    cwd = os.getcwd()
+    os.chdir('../src')
+    os.system('jflex oberon.flex')
+    os.chdir(cwd)
 def build():
     gen_parser()
+    build_lexer()
     cwd = os.getcwd()
     os.chdir('../src')
     if not os.path.exists('../bin'):

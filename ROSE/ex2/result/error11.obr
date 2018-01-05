@@ -1,0 +1,4 @@
+Exception in thread "main" exceptions.IllegalIntegerException: 12345562318947  line: 9       column: 14
+	at OberonScanner.symbol(OberonScanner.java:281)
+	at OberonScanner.yylex(OberonScanner.java:632)
+	at Test.main(Test.java:8)

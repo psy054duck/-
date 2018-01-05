@@ -1,26 +1,37 @@
-import java_cup.runtime.*;
-
+import exceptions.*;
+import java_cup.runtime.SymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory;
 %%
 
+%cup
 %public
 %class OberonScanner
 %line
-%cup
 %column
-%type Symbol
 %caseless
+%scanerror OberonException
 
 %{
-    private Symbol symbol(int type) {
-        return new Symbol(type, yyline+1, yycolumn+1);
+    SymbolFactory sf = new ComplexSymbolFactory();
+    private java_cup.runtime.Symbol token(int type) {
+        return sf.newSymbol(Symbol.terminalNames[type], type, Symbol.terminalNames[type]);
     }
 
-    private Symbol symbol(int type, String value) {
-        return new Symbol(type, yyline+1, yycolumn+1, value);
+    private java_cup.runtime.Symbol token(int type, String value) throws OberonException {
+        if (type == Symbol.IDENTIFIER && yytext().length() > 24) {
+            throw new IllegalIdentifierLengthException(getErrorString());
+        } else if (type == Symbol.INTEGER && yytext().length() > 12) {
+            throw new IllegalIntegerException(getErrorString());
+        }
+        return sf.newSymbol(Symbol.terminalNames[type], type, value);
     }
 
     private String oct2dec(String num) {
         return String.valueOf(Integer.parseInt(num, 8));
+    }
+
+    private String getErrorString() {
+        return yytext() + "  line: " + Integer.toString(yyline + 1)+ "       column: " + Integer.toString(yycolumn+1);
     }
 %}
 
@@ -30,55 +41,67 @@ Integer         = [:digit:]+
 OctalInteger    = 0[:digit:]+
 WhiteSpace      = [ \t\n\r]*
 Comment         = "(*" ~"*)"
+IllegalNumber   = ({Integer} | {OctalInteger}){Identifier}
 
 %%
 <YYINITIAL> {
-    "if"                            { return symbol(sym.IF); }
-    "else"                          { return symbol(sym.ELSE); }
-    "elsif"                         { return symbol(sym.ELSIF); }
-    "then"                          { return symbol(sym.THEN); }
-    "end"                           { return symbol(sym.END); }
-    "array"                         { return symbol(sym.ARRAY); }
-    "var"                           { return symbol(sym.VAR); }
-    "of"                            { return symbol(sym.OF); }
-    "while"                         { return symbol(sym.WHILE); }
-    "do"                            { return symbol(sym.DO); }
-    "record"                        { return symbol(sym.RECORD); }
-    "begin"                         { return symbol(sym.BEGIN); }
-    "module"                        { return symbol(sym.MODULE); }
-    "procedure"                     { return symbol(sym.PROCEDURE); }
-    "const"                         { return symbol(sym.CONST); }
-    "mod"                           { return symbol(sym.MOD); }
-    "div"                           { return symbol(sym.DIV); }
-    "or"                            { return symbol(sym.OR); }
+    "if"                            { return token(Symbol.IF); }
+    "else"                          { return token(Symbol.ELSE); }
+    "elsif"                         { return token(Symbol.ELSIF); }
+    "then"                          { return token(Symbol.THEN); }
+    "end"                           { return token(Symbol.END); }
+    "array"                         { return token(Symbol.ARRAY); }
+    "var"                           { return token(Symbol.VAR); }
+    "of"                            { return token(Symbol.OF); }
+    "while"                         { return token(Symbol.WHILE); }
+    "do"                            { return token(Symbol.DO); }
+    "record"                        { return token(Symbol.RECORD); }
+    "begin"                         { return token(Symbol.BEGIN); }
+    "module"                        { return token(Symbol.MODULE); }
+    "procedure"                     { return token(Symbol.PROCEDURE); }
+    "const"                         { return token(Symbol.CONST); }
+    "mod"                           { return token(Symbol.MOD); }
+    "div"                           { return token(Symbol.DIV); }
+    "or"                            { return token(Symbol.OR); }
 
-    "+"                             { return symbol(sym.PLUS); }
-    "-"                             { return symbol(sym.MINUS); }
-    "*"                             { return symbol(sym.TIMES); }
-    ";"                             { return symbol(sym.SEMI); }
-    ","                             { return symbol(sym.COMMA); }
-    "("                             { return symbol(sym.LEFTP); }
-    ")"                             { return symbol(sym.RIGHTP); }
-    "["                             { return symbol(sym.LEFTB); }
-    "]"                             { return symbol(sym.RIGHTB); }
-    "."                             { return symbol(sym.DOT); }
-    ":"                             { return symbol(sym.COLON); }
+    "+"                             { return token(Symbol.PLUS, yytext()); }
+    "-"                             { return token(Symbol.MINUS, yytext()); }
+    "*"                             { return token(Symbol.TIMES, yytext()); }
+    ";"                             { return token(Symbol.SEMI, yytext()); }
+    ","                             { return token(Symbol.COMMA, yytext()); }
+    "("                             { return token(Symbol.LEFTP, yytext()); }
+    ")"                             { return token(Symbol.RIGHTP, yytext()); }
+    "["                             { return token(Symbol.LEFTB, yytext()); }
+    "]"                             { return token(Symbol.RIGHTB, yytext()); }
+    "."                             { return token(Symbol.DOT, yytext()); }
+    ":"                             { return token(Symbol.COLON, yytext()); }
     
-    "="                             { return symbol(sym.EQ); }
-    "#"                             { return symbol(sym.NE); }
-    "<"                             { return symbol(sym.LT); }
-    "<="                            { return symbol(sym.LE); }
-    ">"                             { return symbol(sym.GT); }
-    ">="                            { return symbol(sym.GE); }
-    ":="                            { return symbol(sym.ASSIGN); }
+    "="                             { return token(Symbol.EQ, yytext()); }
+    "#"                             { return token(Symbol.NE, yytext()); }
+    "<"                             { return token(Symbol.LT, "&lt"); }
+    "<="                            { return token(Symbol.LE, "&le"); }
+    ">"                             { return token(Symbol.GT, "&gt"); }
+    ">="                            { return token(Symbol.GE, "&ge"); }
+    ":="                            { return token(Symbol.ASSIGN, yytext()); }
 }
 
 <YYINITIAL> {
-    {Identifier}        { return symbol(sym.IDENTIFIER, yytext()); }
-    {OctalInteger}      { return symbol(sym.INTEGER, oct2dec(yytext())); }
-    {Integer}           { return symbol(sym.INTEGER, yytext()); }
+    {Identifier}        { return token(Symbol.IDENTIFIER, yytext()); }
+    {OctalInteger}      { 
+        String dec;
+        try {
+            dec = oct2dec(yytext());
+        } catch (Exception e) {
+            throw new IllegalOctalException(getErrorString());
+        }
+        return token(Symbol.INTEGER, dec);
+    }
+    {Integer}           { return token(Symbol.INTEGER, yytext()); }
     {WhiteSpace}        {}
     {Comment}           {}
+    {IllegalNumber}     { throw new IllegalIntegerException(getErrorString()); }
+    "(*"                { throw new MismatchedCommentException(getErrorString()); }
+    .                   { throw new IllegalSymbolException(getErrorString()); }
 }
 
-<<EOF>>                 { return symbol(sym.EOF); }
+<<EOF>>                 { return token(Symbol.EOF); }

@@ -1,6 +1,7 @@
 import java_cup.runtime.*;
 import java.util.*;
 import callgraph.*;
+import exceptions.*;
 
 parser code {:
     OberonScanner s;
@@ -10,7 +11,7 @@ parser code {:
     HashMap<String, String> callSiteMap = new HashMap<String, String>();
     String currentProcedure = null;
     CallGraph graph = new CallGraph();
-    OberonParser(OberonScanner s) { this.s = s; }
+    Parser(OberonScanner s) { this.s = s; }
     String getTypes(String argv) {
         String[] s = argv.split(";");
         String res = "";
@@ -32,6 +33,9 @@ parser code {:
         } else {
             return "(" + res.trim() + ")";
         }
+    }
+    void parserError(OberonException e) throws OberonException {
+        throw e;
     }
 :}
 
@@ -62,7 +66,8 @@ terminal String         IDENTIFIER, INTEGER;
 module                  ::= MODULE IDENTIFIER SEMI declarations begin END IDENTIFIER DOT       {: for (int i = 0; i < ccnt; ++i) {
                                                                                                       graph.addEdge("c"+i, procedureMap.get(callSiteMap.get("c"+i)));
                                                                                                   }
-                                                                                                  graph.show(); :};
+                                                                                                  // graph.show(); 
+                                                                                                :};
 
 begin                   ::= BEGIN statement_sequence
                         |
@@ -97,6 +102,7 @@ procedure_body          ::= declarations begin END IDENTIFIER;
 procedure_heading       ::= PROCEDURE IDENTIFIER:i formal_parameters:fs {: currentProcedure = i; graph.addProcedure("f"+fcnt, i+getTypes(fs)); procedureMap.put(i, "f"+fcnt); ++fcnt; :};
 
 formal_parameters       ::= LEFTP fp_sections:fps RIGHTP        {: RESULT = "(" + fps + ")"; :}
+                        |   error {: parserError(new MissingLeftParenthesisException("hhhh")); :}fp_sections RIGHTP
                         |                                       {: RESULT = ""; :}
                         ;
 
@@ -150,7 +156,9 @@ else_statement          ::= ELSE statement_sequence
 procedure_call          ::= IDENTIFIER:i actual_parameters:a    {: graph.addCallSite("c"+ccnt, currentProcedure+"()", i + a + ";"); callSiteMap.put("c"+ccnt, i); ++ccnt; :}
                         |   IDENTIFIER:i                        {: graph.addCallSite("c"+ccnt, currentProcedure, i); callSiteMap.put("c"+ccnt, i); ++ccnt; :}
                         ;
-actual_parameters       ::= LEFTP expression_list:el RIGHTP    {: RESULT = "(" + el + ")"; :};
+actual_parameters       ::= LEFTP expression_list:el RIGHTP    {: RESULT = "(" + el + ")"; :}
+                        |   error {: parserError(new MissingLeftParenthesisException("hhh")); :}expression_list RIGHTP
+                        ;
 
 assignment              ::= IDENTIFIER:i selector:s ASSIGN expression:e        {: RESULT = i + s + ":=" + e; :};
 
@@ -193,11 +201,13 @@ term_list_with          ::= binary_low:b term:t term_list_with:tl             {:
                         |                                              {: RESULT = ""; :}
                         ;
 term                    ::= factor:f1 binary_mid:bm factor:f2                   {: RESULT = f1 + bm + f2; :}
+                        |   factor error {: parserError(new MissingOperatorException("aaa")); :} factor
                         |   factor:f                                            {: RESULT = f; :}
                         ;
 factor                  ::= IDENTIFIER:i selector:s                     {: RESULT = i + s; :}
                         |   number:n                                    {: RESULT = n; :}
                         |   LEFTP expression:e RIGHTP                   {: RESULT = "(" + e + ")"; :}
+                        |   error {: parserError(new MissingLeftParenthesisException("hh")); :} expression RIGHTP                     
                         |   NOT factor:f                                {: RESULT = "~" + f; :}
                         ;
 number                  ::= INTEGER:i                                   {: RESULT = i; :};

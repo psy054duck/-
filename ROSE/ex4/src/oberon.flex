@@ -1,3 +1,4 @@
+import exceptions.*;
 %%
 
 %public
@@ -6,18 +7,28 @@
 %column
 %type Symbol
 %caseless
+%scanerror OberonException
 
 %{
     private Symbol symbol(int type) {
         return new Symbol(type, yyline+1, yycolumn+1);
     }
 
-    private Symbol symbol(int type, String value) {
+    private Symbol symbol(int type, String value) throws OberonException {
+        if (type == Type.IDENTIFIER && yytext().length() > 24) {
+            throw new IllegalIdentifierLengthException(getErrorString());
+        } else if (type == Type.INTEGER && yytext().length() > 12) {
+            throw new IllegalIntegerException(getErrorString());
+        }
         return new Symbol(type, yyline+1, yycolumn+1, value);
     }
 
     private String oct2dec(String num) {
         return String.valueOf(Integer.parseInt(num, 8));
+    }
+
+    private String getErrorString() {
+        return yytext() + "  line: " + Integer.toString(yyline + 1)+ "       column: " + Integer.toString(yycolumn+1);
     }
 %}
 
@@ -27,6 +38,7 @@ Integer         = [:digit:]+
 OctalInteger    = 0[:digit:]+
 WhiteSpace      = [ \t\n\r]*
 Comment         = "(*" ~"*)"
+IllegalNumber   = ({Integer} | {OctalInteger}){Identifier}
 
 %%
 <YYINITIAL> {
@@ -72,10 +84,21 @@ Comment         = "(*" ~"*)"
 
 <YYINITIAL> {
     {Identifier}        { return symbol(Type.IDENTIFIER, yytext()); }
-    {OctalInteger}      { return symbol(Type.INTEGER, oct2dec(yytext())); }
+    {OctalInteger}      { 
+        String dec;
+        try {
+            dec = oct2dec(yytext());
+        } catch (Exception e) {
+            throw new IllegalOctalException(getErrorString());
+        }
+        return symbol(Type.INTEGER, dec);
+    }
     {Integer}           { return symbol(Type.INTEGER, yytext()); }
     {WhiteSpace}        {}
     {Comment}           {}
+    {IllegalNumber}     { throw new IllegalIntegerException(getErrorString()); }
+    "(*"                { throw new MismatchedCommentException(getErrorString()); }
+    .                   { throw new IllegalSymbolException(getErrorString()); }
 }
 
 <<EOF>>                 { return symbol(Type.EOF); }

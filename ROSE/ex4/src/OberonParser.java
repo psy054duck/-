@@ -2,18 +2,24 @@ import java.util.*;
 import java.io.*;
 import java.util.regex.*;
 import flowchart.*;
-
-
+import exceptions.*;
 
 import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.geometry.PrimitiveState;
 
 public class OberonParser {
     private OberonScanner scanner;
     private Symbol lookahead;
+    private Symbol previous;
     private String _start;
     private HashMap<String, Set<String>> _first;
     private HashMap<String, Set<String>> _follow;
     private HashMap<String, Set<String>> _grammar;
+    private HashMap<String, String> global;
+    private HashMap<String, String> local;
+    private ArrayList<MyProcedure> _procedures;
+    private ArrayList<ProcedureCall> _procedureCalls;
+    private int numArgument;
+    private MyProcedure _procedure;
     private Stack<Scope> scopeStack;
     private Module module;
 
@@ -24,6 +30,9 @@ public class OberonParser {
         _first = new HashMap<String, Set<String>>();
         _follow = new HashMap<String, Set<String>>();
         _grammar = new HashMap<>();
+        _procedure = new MyProcedure("");
+        _procedures = new ArrayList<>();
+        _procedureCalls = new ArrayList<>();
         scopeStack = new Stack<>();
         setGrammar(grammar);
         calFollow();
@@ -31,26 +40,72 @@ public class OberonParser {
 
     public void parse() throws Exception {
         module();
-        module.show();
+        // for (MyProcedure p : _procedures) {
+        //     System.out.println(p.getName() + ": " + String.valueOf(p.getTypes().size()));
+        // }
+        if (! check()) {
+            throw new ParameterMismatchedException(getErrorMessage());
+        }
+        // module.show();
+    }
+
+    private boolean check() {
+        for (ProcedureCall c : _procedureCalls) {
+            if (getProcedure(c.getName()).getTypes().size() != c.getNum()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private MyProcedure getProcedure(String name) {
+        for (MyProcedure p : _procedures) {
+            if (p.getName().equals(name)) {
+                return p;
+            }
+        }
+        return null;
     }
 
     private String match(int expected) throws Exception {
         // System.out.println(lookahead);
+        // System.out.println(lookahead.getValue());
         if (lookahead.getType() == expected) {
             String res = lookahead.getValue();
             if (res == "") {
-                res = sym.terminalNames[lookahead.getType()];
+                res = Type.terminalNames[lookahead.getType()];
             }
+            previous = lookahead;
             lookahead = scanner.yylex();
             return res;
+        } else if (isOperator(previous.getType())) {
+            throw new MissingOperandException(getErrorMessage());
+        } else if (expected == Type.LEFTP) {
+            throw new MissingLeftParenthesisException(getErrorMessage());
+        } else if (expected == Type.RIGHTP) {
+            throw new MissingRightParenthesisException(getErrorMessage());
+        } else if (previous.getType() == lookahead.getType() && lookahead.getType() == Type.IDENTIFIER) {
+            throw new MissingOperatorException(getErrorMessage());
         } else {
-            System.out.print("Expected: ");
-            System.out.println(sym.terminalNames[expected]);
-            System.out.print("Lookahead: ");
-            System.out.println(sym.terminalNames[lookahead.getType()]);
-            System.out.println(lookahead);
-            throw new Exception();
+            System.out.println(Type.terminalNames[expected]);
+            throw new Exception(getErrorMessage());
         }
+    }
+
+    private boolean isOperator(int symbol) {
+        return symbol == Type.PLUS
+               || symbol == Type.MINUS
+               || symbol == Type.TIMES
+               || symbol == Type.EQ
+               || symbol == Type.NE
+               || symbol == Type.LT
+               || symbol == Type.LE
+               || symbol == Type.GT
+               || symbol == Type.GE;
+    }
+
+    private String getErrorMessage() {
+        return lookahead.getValue() + "    line: " + lookahead.getLine() + "    column: " + lookahead.getColumn();
     }
 
     private boolean isTerminal(String symbol) {
@@ -186,23 +241,23 @@ public class OberonParser {
 
     private String module() throws Exception {
         String res = "";
-        match(sym.MODULE);
-        res += match(sym.IDENTIFIER);
+        match(Type.MODULE);
+        res += match(Type.IDENTIFIER);
         module = new Module(res);
-        res += match(sym.SEMI);
+        res += match(Type.SEMI);
         res += declarations();
         res += begin();
-        res += match(sym.END);
-        res += match(sym.IDENTIFIER);
-        res += match(sym.DOT);
+        res += match(Type.END);
+        res += match(Type.IDENTIFIER);
+        res += match(Type.DOT);
     
         return res;
     }
     
     private String begin() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.BEGIN) {
-            res += match(sym.BEGIN);
+        if (lookahead.getType() == Type.BEGIN) {
+            res += match(Type.BEGIN);
             res += statement_sequence();
         }
         return res;
@@ -220,18 +275,18 @@ public class OberonParser {
     
     private String const_declaration() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.CONST) {
-            res += match(sym.CONST);
+        if (lookahead.getType() == Type.CONST) {
+            res += match(Type.CONST);
             res += const_expression();
-            res += match(sym.SEMI);
+            res += match(Type.SEMI);
         }
         return res;
     }
     
     private String const_expression_prefix() throws Exception {
         String res = "";
-        res += match(sym.IDENTIFIER);
-        res += match(sym.EQ);
+        res += match(Type.IDENTIFIER);
+        res += match(Type.EQ);
         res += expression();
     
         return res;
@@ -239,8 +294,8 @@ public class OberonParser {
     
     private String const_expression_suffix() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.SEMI) {
-            res += match(sym.SEMI);
+        if (lookahead.getType() == Type.SEMI) {
+            res += match(Type.SEMI);
             res += const_expression();
         }
         return res;
@@ -256,7 +311,7 @@ public class OberonParser {
     
     private String type_declaration() throws Exception {
         String res = "";
-        if (getFirst("type").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("type").contains(Type.terminalNames[lookahead.getType()])) {
             res += type();
             res += type_expression();
         }
@@ -265,17 +320,17 @@ public class OberonParser {
     
     private String type_expression_prefix() throws Exception {
         String res = "";
-        res += match(sym.IDENTIFIER);
-        res += match(sym.EQ);
+        res += match(Type.IDENTIFIER);
+        res += match(Type.EQ);
         res += type();
-        res += match(sym.SEMI);
+        res += match(Type.SEMI);
     
         return res;
     }
     
     private String type_expression_suffix() throws Exception {
         String res = "";
-        if (getFirst("type_expression").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("type_expression").contains(Type.terminalNames[lookahead.getType()])) {
             res += type_expression();
         }
         return res;
@@ -291,8 +346,8 @@ public class OberonParser {
     
     private String var_declaration() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.VAR) {
-            res += match(sym.VAR);
+        if (lookahead.getType() == Type.VAR) {
+            res += match(Type.VAR);
             res += var_expression();
         }
         return res;
@@ -300,16 +355,16 @@ public class OberonParser {
     
     private String var_expression_suffix() throws Exception {
         String res = "";
-        res += match(sym.COLON);
+        res += match(Type.COLON);
         res += type();
-        res += match(sym.SEMI);
+        res += match(Type.SEMI);
     
         return res;
     }
     
     private String var_expression_prefix() throws Exception {
         String res = "";
-        if (getFirst("var_expression").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("var_expression").contains(Type.terminalNames[lookahead.getType()])) {
             res += var_expression();
         }
         return res;
@@ -326,9 +381,9 @@ public class OberonParser {
     
     private String procedure_declarations() throws Exception {
         String res = "";
-        if (getFirst("procedure_declaration").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("procedure_declaration").contains(Type.terminalNames[lookahead.getType()])) {
             res += procedure_declaration();
-            res += match(sym.SEMI);
+            res += match(Type.SEMI);
             res += procedure_declarations();
         }
         return res;
@@ -338,7 +393,7 @@ public class OberonParser {
         String res = "";
         res += procedure_heading();
         scopeStack.push(new Scope(module.add(res)));
-        res += match(sym.SEMI);
+        res += match(Type.SEMI);
         res += procedure_body();
     
         return res;
@@ -348,34 +403,40 @@ public class OberonParser {
         String res = "";
         res += declarations();
         res += begin();
-        res += match(sym.END);
-        res += match(sym.IDENTIFIER);
+        res += match(Type.END);
+        res += match(Type.IDENTIFIER);
     
         return res;
     }
     
     private String procedure_heading() throws Exception {
         String res = "";
-        match(sym.PROCEDURE);
-        res += match(sym.IDENTIFIER);
+        match(Type.PROCEDURE);
+        if (lookahead.getType() == Type.IDENTIFIER) {
+            _procedure = new MyProcedure(lookahead.getValue());
+            res += match(Type.IDENTIFIER);
+        }
         formal_parameters();
-    
+        _procedures.add(_procedure);
+        _procedure = null;
         return res;
     }
     
     private String formal_parameters() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.LEFTP) {
-            res += match(sym.LEFTP);
+        if (lookahead.getType() == Type.LEFTP) {
+            res += match(Type.LEFTP);
             res += fp_sections();
-            res += match(sym.RIGHTP);
+            res += match(Type.RIGHTP);
+        } else if (lookahead.getType() != Type.SEMI) {
+            throw new MissingLeftParenthesisException(getErrorMessage());
         }
         return res;
     }
     
     private String fp_sections() throws Exception {
         String res = "";
-        if (getFirst("fp_section").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("fp_section").contains(Type.terminalNames[lookahead.getType()])) {
             res += fp_section();
             res += fp_sections_suffix();
         }
@@ -384,8 +445,8 @@ public class OberonParser {
     
     private String fp_sections_suffix() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.SEMI) {
-            res += match(sym.SEMI);
+        if (lookahead.getType() == Type.SEMI) {
+            res += match(Type.SEMI);
             res += fp_sections();
         }
         return res;
@@ -393,25 +454,27 @@ public class OberonParser {
     
     private String fp_section() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.VAR) {
-            res += match(sym.VAR);
-            res += identifier_list();
-            res += match(sym.COLON);
-            res += type();
-        } else {
-            res += identifier_list();
-            res += match(sym.COLON);
-            res += type();
+        if (lookahead.getType() == Type.VAR) {
+            res += match(Type.VAR);
         }
-        return res;
+        res += identifier_list();
+        res += match(Type.COLON);
+        String tmp = type();
+        ArrayList<String> l = _procedure.getTypes();
+        for (int i = 0; i < l.size(); ++i) {
+            if (l.get(i) == "") {
+                l.set(i, tmp);
+            }
+        }
+        return res + tmp;
     }
     
     private String type() throws Exception {
         String res = "";
-        if (getFirst("array_type").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("array_type").contains(Type.terminalNames[lookahead.getType()])) {
             res += array_type();
-        } else if (lookahead.getType() == sym.IDENTIFIER) {
-            res += match(sym.IDENTIFIER);
+        } else if (lookahead.getType() == Type.IDENTIFIER) {
+            res += match(Type.IDENTIFIER);
         } else {
             res += record_type();
         }
@@ -420,19 +483,19 @@ public class OberonParser {
     
     private String record_type() throws Exception {
         String res = "";
-        res += match(sym.RECORD);
+        res += match(Type.RECORD);
         res += field_list();
         res += field_list_with_semi();
-        res += match(sym.END);
+        res += match(Type.END);
     
         return res;
     }
     
     private String field_list() throws Exception {
         String res = "";
-        if (getFirst("identifier_list").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("identifier_list").contains(Type.terminalNames[lookahead.getType()])) {
             res += identifier_list();
-            res += match(sym.COLON);
+            res += match(Type.COLON);
             res += type();
         }
         return res;
@@ -440,8 +503,8 @@ public class OberonParser {
     
     private String field_list_with_semi() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.SEMI) {
-            res += match(sym.SEMI);
+        if (lookahead.getType() == Type.SEMI) {
+            res += match(Type.SEMI);
             res += field_list();
             res += field_list_with_semi();
         }
@@ -450,9 +513,9 @@ public class OberonParser {
     
     private String array_type() throws Exception {
         String res = "";
-        res += match(sym.ARRAY);
+        res += match(Type.ARRAY);
         res += expression();
-        res += match(sym.OF);
+        res += match(Type.OF);
         res += type();
     
         return res;
@@ -460,7 +523,10 @@ public class OberonParser {
     
     private String identifier_list() throws Exception {
         String res = "";
-        res += match(sym.IDENTIFIER);
+        if (lookahead.getType() == Type.IDENTIFIER && _procedure != null) {
+            _procedure.getTypes().add("");
+        }
+        res += match(Type.IDENTIFIER);
         res += identifier_list_with();
     
         return res;
@@ -468,9 +534,12 @@ public class OberonParser {
     
     private String identifier_list_with() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.COMMA) {
-            res += match(sym.COMMA);
-            res += match(sym.IDENTIFIER);
+        if (lookahead.getType() == Type.COMMA) {
+            res += match(Type.COMMA);
+            if (lookahead.getType() == Type.IDENTIFIER && _procedure != null) {
+                _procedure.getTypes().add("");
+            }
+            res += match(Type.IDENTIFIER);
             res += identifier_list_with();
         }
         return res;
@@ -486,8 +555,8 @@ public class OberonParser {
     
     private String statement_with_semi() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.SEMI) {
-            match(sym.SEMI);
+        if (lookahead.getType() == Type.SEMI) {
+            match(Type.SEMI);
             res += statement() + "\n";
             res += statement_with_semi();
         }
@@ -496,12 +565,12 @@ public class OberonParser {
     
     private String statement() throws Exception {
         String res = "";
-        if (getFirst("if_statement").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("if_statement").contains(Type.terminalNames[lookahead.getType()])) {
             res += if_statement();
-        } else if (getFirst("while_statement").contains(sym.terminalNames[lookahead.getType()])) {
+        } else if (getFirst("while_statement").contains(Type.terminalNames[lookahead.getType()])) {
             res += while_statement();
-        } else if (lookahead.getType() == sym.IDENTIFIER) {
-            res += match(sym.IDENTIFIER);
+        } else if (lookahead.getType() == Type.IDENTIFIER) {
+            res += match(Type.IDENTIFIER);
             res += statement_suffix();
             scopeStack.peek().add(new PrimitiveStatement(res));
         }
@@ -510,7 +579,7 @@ public class OberonParser {
     
     private String statement_suffix() throws Exception {
         String res = "";
-        if (getFirst("procedure_call").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("procedure_call").contains(Type.terminalNames[lookahead.getType()])) {
             res += procedure_call();
         } else {
             res += assignment();
@@ -520,43 +589,43 @@ public class OberonParser {
     
     private String while_statement() throws Exception {
         String res = "";
-        match(sym.WHILE);
+        match(Type.WHILE);
         res += expression();
         WhileStatement whileSmt = new WhileStatement(res);
         scopeStack.peek().add(whileSmt);
-        match(sym.DO);
+        match(Type.DO);
         scopeStack.push(new Scope(whileSmt.getLoopBody()));
         statement_sequence();
-        match(sym.END);
+        match(Type.END);
         scopeStack.pop();
         return res;
     }
     
     private String if_statement() throws Exception {
         String res = "";
-        res += match(sym.IF);
+        res += match(Type.IF);
         IfStatement ifSmt = new IfStatement(expression());
         scopeStack.peek().add(ifSmt);
         scopeStack.push(new Scope(ifSmt.getFalseBody()));
         scopeStack.push(new Scope(ifSmt.getTrueBody()));
-        res += match(sym.THEN);
+        res += match(Type.THEN);
         res += statement_sequence();
         scopeStack.pop();
         res += elsif_statement();
         res += else_statement();
-        res += match(sym.END);
+        res += match(Type.END);
     
         return res;
     }
     
     private String elsif_statement() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.ELSIF) {
-            res += match(sym.ELSIF);
+        if (lookahead.getType() == Type.ELSIF) {
+            res += match(Type.ELSIF);
             IfStatement ifSmt = new IfStatement(expression());
             scopeStack.peek().add(ifSmt);
             scopeStack.push(new Scope(ifSmt.getTrueBody()));
-            res += match(sym.THEN);
+            res += match(Type.THEN);
             res += statement_sequence();
             scopeStack.pop();
             scopeStack.pop();
@@ -568,8 +637,8 @@ public class OberonParser {
     
     private String else_statement() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.ELSE) {
-            res += match(sym.ELSE);
+        if (lookahead.getType() == Type.ELSE) {
+            res += match(Type.ELSE);
             res += statement_sequence();
         }
         scopeStack.pop();
@@ -578,25 +647,28 @@ public class OberonParser {
     
     private String procedure_call() throws Exception {
         String res = "";
-        if (getFirst("actual_parameters").contains(sym.terminalNames[lookahead.getType()])) {
+        String name = previous.getValue();
+        if (getFirst("actual_parameters").contains(Type.terminalNames[lookahead.getType()])) {
+            numArgument = 0;
             res += actual_parameters();
         }
+        // System.out.println(numArgument);
+        _procedureCalls.add(new ProcedureCall(name, numArgument));
         return res;
     }
     
     private String actual_parameters() throws Exception {
         String res = "";
-        res += match(sym.LEFTP);
+        res += match(Type.LEFTP);
         res += expression_list();
-        res += match(sym.RIGHTP);
-    
+        res += match(Type.RIGHTP);
         return res;
     }
     
     private String assignment() throws Exception {
         String res = "";
         res += selector();
-        res += " " + match(sym.ASSIGN) + " ";
+        res += " " + match(Type.ASSIGN) + " ";
         res += expression();
     
         return res;
@@ -612,8 +684,11 @@ public class OberonParser {
     
     private String expression_list() throws Exception {
         String res = "";
-        if (getFirst("expression").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("expression").contains(Type.terminalNames[lookahead.getType()])) {
             res += expression();
+            if (! res.equals("")) {
+                numArgument++;
+            }
             res += expression_list_with();
         }
         return res;
@@ -621,9 +696,13 @@ public class OberonParser {
     
     private String expression_list_with() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.COMMA) {
-            res += match(sym.COMMA);
-            res += expression();
+        if (lookahead.getType() == Type.COMMA) {
+            res += match(Type.COMMA);
+            String tmp = expression();
+            if (! tmp.equals("")) {
+                ++numArgument;
+            }
+            res += tmp;
             res += expression_list_with();
         }
         return res;
@@ -631,25 +710,25 @@ public class OberonParser {
     
     private String comp() throws Exception {
         String res = " ";
-        if (lookahead.getType() == sym.LE) {
-            res += match(sym.LE);
-        } else if (lookahead.getType() == sym.LT) {
-            res += match(sym.LT);
-        } else if (lookahead.getType() == sym.EQ) {
-            res += match(sym.EQ);
-        } else if (lookahead.getType() == sym.GE) {
-            res += match(sym.GE);
-        } else if (lookahead.getType() == sym.GT) {
-            res += match(sym.GT);
+        if (lookahead.getType() == Type.LE) {
+            res += match(Type.LE);
+        } else if (lookahead.getType() == Type.LT) {
+            res += match(Type.LT);
+        } else if (lookahead.getType() == Type.EQ) {
+            res += match(Type.EQ);
+        } else if (lookahead.getType() == Type.GE) {
+            res += match(Type.GE);
+        } else if (lookahead.getType() == Type.GT) {
+            res += match(Type.GT);
         } else {
-            res += match(sym.NE);
+            res += match(Type.NE);
         }
         return res + " ";
     }
     
     private String comp_expression() throws Exception {
         String res = "";
-        if (getFirst("comp").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("comp").contains(Type.terminalNames[lookahead.getType()])) {
             res += comp();
             res += simple_expression();
         }
@@ -658,36 +737,36 @@ public class OberonParser {
     
     private String unary() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.PLUS) {
-            res += match(sym.PLUS);
-        } else if (lookahead.getType() == sym.MINUS) {
-            res += match(sym.MINUS);
+        if (lookahead.getType() == Type.PLUS) {
+            res += match(Type.PLUS);
+        } else if (lookahead.getType() == Type.MINUS) {
+            res += match(Type.MINUS);
         }
         return res;
     }
     
     private String binary_low() throws Exception {
         String res = " ";
-        if (lookahead.getType() == sym.OR) {
-            res += match(sym.OR);
-        } else if (lookahead.getType() == sym.PLUS) {
-            res += match(sym.PLUS);
+        if (lookahead.getType() == Type.OR) {
+            res += match(Type.OR);
+        } else if (lookahead.getType() == Type.PLUS) {
+            res += match(Type.PLUS);
         } else {
-            res += match(sym.MINUS);
+            res += match(Type.MINUS);
         }
         return res + " ";
     }
     
     private String binary_mid() throws Exception {
         String res = " ";
-        if (lookahead.getType() == sym.TIMES) {
-            res += match(sym.TIMES);
-        } else if (lookahead.getType() == sym.DIV) {
-            res += match(sym.DIV);
-        } else if (lookahead.getType() == sym.MOD) {
-            res += match(sym.MOD);
+        if (lookahead.getType() == Type.TIMES) {
+            res += match(Type.TIMES);
+        } else if (lookahead.getType() == Type.DIV) {
+            res += match(Type.DIV);
+        } else if (lookahead.getType() == Type.MOD) {
+            res += match(Type.MOD);
         } else {
-            res += match(sym.AND);
+            res += match(Type.AND);
         }
         return res + " ";
     }
@@ -702,7 +781,7 @@ public class OberonParser {
     
     private String term_list_with() throws Exception {
         String res = "";
-        if (getFirst("binary_low").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("binary_low").contains(Type.terminalNames[lookahead.getType()])) {
             res += binary_low();
             res += term();
             res += term_list_with();
@@ -720,7 +799,7 @@ public class OberonParser {
     
     private String term_suffix() throws Exception {
         String res = "";
-        if (getFirst("binary_mid").contains(sym.terminalNames[lookahead.getType()])) {
+        if (getFirst("binary_mid").contains(Type.terminalNames[lookahead.getType()])) {
             res += binary_mid();
             res += factor();
         }
@@ -729,46 +808,46 @@ public class OberonParser {
     
     private String factor() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.NOT) {
-            res += match(sym.NOT);
+        if (lookahead.getType() == Type.NOT) {
+            res += match(Type.NOT);
             res += factor();
-        } else if (getFirst("number").contains(sym.terminalNames[lookahead.getType()])) {
+        } else if (getFirst("number").contains(Type.terminalNames[lookahead.getType()])) {
             res += number();
-        } else if (lookahead.getType() == sym.IDENTIFIER) {
-            res += match(sym.IDENTIFIER);
+        } else if (lookahead.getType() == Type.IDENTIFIER) {
+            res += match(Type.IDENTIFIER);
             res += selector();
         } else {
-            res += match(sym.LEFTP);
+            res += match(Type.LEFTP);
             res += expression();
-            res += match(sym.RIGHTP);
+            res += match(Type.RIGHTP);
         }
         return res;
     }
     
     private String number() throws Exception {
         String res = "";
-        res += match(sym.INTEGER);
+        res += match(Type.INTEGER);
     
         return res;
     }
     
     private String selector() throws Exception {
         String res = "";
-        if (lookahead.getType() == sym.LEFTB) {
-            res += match(sym.LEFTB);
+        if (lookahead.getType() == Type.LEFTB) {
+            res += match(Type.LEFTB);
             res += expression();
-            res += match(sym.RIGHTB);
+            res += match(Type.RIGHTB);
             res += selector();
-        } else if (lookahead.getType() == sym.DOT) {
-            res += match(sym.DOT);
-            res += match(sym.IDENTIFIER);
+        } else if (lookahead.getType() == Type.DOT) {
+            res += match(Type.DOT);
+            res += match(Type.IDENTIFIER);
             res += selector();
         }
         return res;
     }
     
     public static void main(String[] argv) throws Exception {
-        OberonParser parser = new OberonParser("../testcases/case1.obr", "../src/grammar");
+        OberonParser parser = new OberonParser(argv[0], "../src/grammar");
         parser.parse();
     }
 }
@@ -791,5 +870,45 @@ class Scope {
         } else {
             smtSequence.add(p);
         }
+    }
+}
+
+class MyProcedure {
+    private String name;
+    private ArrayList<String> types;
+
+    public MyProcedure(String n) {
+        name = n;
+        types = new ArrayList<>();
+    }
+
+    public ArrayList<String> getTypes() {
+        return types;
+    }
+
+    public void setTypes(ArrayList<String> t) {
+        types = t;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
+class ProcedureCall {
+    private String name;
+    private int num;
+
+    public ProcedureCall(String n, int nu) {
+        name = n;
+        num = nu;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getNum() {
+        return num;
     }
 }

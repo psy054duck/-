@@ -1,0 +1,9 @@
+Syntax error for input symbol "SEMI" spanning from null to null
+Exception in thread "main" exceptions.MissingLeftParenthesisException: hh
+	at Parser$CUP$Parser$actions.CUP$Parser$do_action_part00000000(Parser.java:1522)
+	at Parser$CUP$Parser$actions.CUP$Parser$do_action(Parser.java:1617)
+	at Parser.do_action(Parser.java:407)
+	at java_cup.runtime.lr_parser.parse_lookahead(lr_parser.java:1308)
+	at java_cup.runtime.lr_parser.error_recovery(lr_parser.java:1017)
+	at java_cup.runtime.lr_parser.parse(lr_parser.java:728)
+	at Main.main(Main.java:9)

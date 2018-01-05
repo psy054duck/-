@@ -1,0 +1,90 @@
+(* Lexical error: illegal number range *)
+MODULE Sample;
+    VAR x, y: INTEGER;
+    
+    PROCEDURE Sum(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);
+        VAR i: INTEGER;
+    BEGIN
+        res := 01;
+        i := 12345562318947;
+        WHILE i < num DO
+            res := res + data[i];
+        END;
+    END Sum;
+
+    PROCEDURE Sort(data: ARRAY 100 OF INTEGER; num: INTEGER);
+        VAR i, j, max, tmp: INTEGER;
+    BEGIN
+        WHILE i < num DO
+            j := i + 1;
+            max := i;
+            WHILE j < num DO
+                IF data[j] > data[max] THEN
+                    max := j;
+                END
+            END;
+            tmp := data[max];
+            data[max] := data[i];
+            data[i] := tmp;
+        END
+    END Sort;
+    
+    PROCEDURE Average(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);
+        VAR sum, i: INTEGER;
+    BEGIN
+        sum := 0;
+        i := 0;
+        Sum(data, num, sum);
+        res := sum DIV num;
+    END Average;
+
+    PROCEDURE a;
+    BEGIN
+        b(x, 1);
+        c(y, 2);
+    END a;
+
+    PROCEDURE b(i: INTEGER; j: INTEGER);
+    BEGIN
+        x := i + j;
+    END b;
+
+    PROCEDURE c(i: INTEGER; j: INTEGER);
+    BEGIN
+        b(x + i, 2 * j);
+        d(2 * i, y + j);
+    END c;
+
+    PROCEDURE d(i: INTEGER; j: INTEGER);
+    BEGIN
+        y := i * j;
+        IF y > 10 THEN
+            y := y - 10;
+        END;
+    END d;
+
+    PROCEDURE testIf(a: INTEGER; b: INTEGER; c: INTEGER);
+        VAR max: INTEGER;
+    BEGIN
+        IF a > b THEN
+            IF a > c THEN
+                max := a;
+            ELSIF a * a < 0 THEN
+                max := -1;      
+            ELSE
+                max := c;
+            END;
+            max := 1;
+        ELSIF b > c THEN
+            IF b * b < 0 THEN
+                max := -1;      
+            ELSE
+                max := b;
+            END;
+            max := 2;
+        ELSE
+            max := c;
+        END
+    END testIF;
+
+END Sample.
