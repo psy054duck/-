@@ -26,7 +26,8 @@ MODULE Sample;
             tmp := data[max];
             data[max] := data[i];
             data[i] := tmp;
-        END
+        END;
+        write(i);
     END Sort;
     
     PROCEDURE Average(data: ARRAY 100 OF INTEGER; num: INTEGER; VAR res: INTEGER);

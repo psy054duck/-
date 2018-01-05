@@ -1,6 +1,0 @@
-Exception in thread "main" exceptions.IllegalIdentifierLengthException: xslkdfjweiofjsdlcvksnavdlsafrjewiothj  line: 3       column: 9
-	at OberonScanner.token(OberonScanner.java:285)
-	at OberonScanner.next_token(OberonScanner.java:800)
-	at Parser.scan(Parser.java:426)
-	at java_cup.runtime.lr_parser.parse(lr_parser.java:693)
-	at Main.main(Main.java:9)

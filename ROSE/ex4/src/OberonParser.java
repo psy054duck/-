@@ -4,8 +4,6 @@ import java.util.regex.*;
 import flowchart.*;
 import exceptions.*;
 
-import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.geometry.PrimitiveState;
-
 public class OberonParser {
     private OberonScanner scanner;
     private Symbol lookahead;
@@ -46,11 +44,17 @@ public class OberonParser {
         if (! check()) {
             throw new ParameterMismatchedException(getErrorMessage());
         }
-        // module.show();
+        module.show();
     }
 
     private boolean check() {
         for (ProcedureCall c : _procedureCalls) {
+            String name = c.getName();
+            if (name.toLowerCase().equals("write")
+                || name.toLowerCase().equals("writeln")
+                || name.toLowerCase().equals("read")) {
+                    continue;
+            }
             if (getProcedure(c.getName()).getTypes().size() != c.getNum()) {
                 return false;
             }

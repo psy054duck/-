@@ -1,3 +1,0 @@
-Exception in thread "main" exceptions.ParameterMismatchedException:     line: 90    column: 12
-	at OberonParser.parse(OberonParser.java:47)
-	at OberonParser.main(OberonParser.java:851)

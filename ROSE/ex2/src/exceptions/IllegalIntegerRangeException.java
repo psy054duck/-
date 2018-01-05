@@ -1,7 +1,7 @@
 package exceptions;
 
 public class IllegalIntegerRangeException extends LexicalException {
-    public IllegalIntegerException(String message) {
+    public IllegalIntegerRangeException(String message) {
         super(message);
     }
 }

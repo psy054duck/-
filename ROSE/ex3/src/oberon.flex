@@ -1,6 +1,8 @@
 import exceptions.*;
-import java_cup.runtime.SymbolFactory;
+import java_cup.runtime.*;
 import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+import java_cup.runtime.ComplexSymbolFactory.Location;
 %%
 
 %cup
@@ -12,9 +14,11 @@ import java_cup.runtime.ComplexSymbolFactory;
 %scanerror OberonException
 
 %{
-    SymbolFactory sf = new ComplexSymbolFactory();
+    ComplexSymbolFactory sf = new ComplexSymbolFactory();
     private java_cup.runtime.Symbol token(int type) {
-        return sf.newSymbol(Symbol.terminalNames[type], type, Symbol.terminalNames[type]);
+        int left = yyline + 1;
+        int right = yycolumn + 1;
+        return new java_cup.runtime.Symbol(type, left, right, Symbol.terminalNames[type]);
     }
 
     private java_cup.runtime.Symbol token(int type, String value) throws OberonException {
@@ -23,7 +27,9 @@ import java_cup.runtime.ComplexSymbolFactory;
         } else if (type == Symbol.INTEGER && yytext().length() > 12) {
             throw new IllegalIntegerException(getErrorString());
         }
-        return sf.newSymbol(Symbol.terminalNames[type], type, value);
+        int left = yyline + 1;
+        int right = yycolumn + 1;       
+        return new java_cup.runtime.Symbol(type, left, right, value);
     }
 
     private String oct2dec(String num) {

@@ -1,3 +1,0 @@
-Exception in thread "main" exceptions.IllegalIntegerException: 1abc  line: 19       column: 22
-	at OberonScanner.yylex(OberonScanner.java:666)
-	at Test.main(Test.java:8)

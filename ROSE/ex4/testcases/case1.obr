@@ -26,6 +26,7 @@ MODULE Sample;
             tmp := data[max];
             data[max] := data[i];
             data[i] := tmp;
+            write(i);
         END
     END Sort;
     
