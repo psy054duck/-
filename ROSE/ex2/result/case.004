@@ -1,0 +1,3 @@
+Exception in thread "main" exceptions.IllegalOctalException: 01239  line: 9       column: 14
+	at OberonScanner.yylex(OberonScanner.java:644)
+	at Test.main(Test.java:8)

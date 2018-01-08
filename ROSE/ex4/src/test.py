@@ -16,8 +16,6 @@ def first(symbol):
         return First[symbol]
 
     tmp = First.setdefault(symbol, set())
-    if '' in grammar[symbol]:
-        tmp.add('')
     
     for body in grammar[symbol]:
         for body_symbol in body.split():
@@ -31,6 +29,8 @@ def first(symbol):
                     break
         else:
             tmp.add('')
+    if '' in grammar[symbol]:
+        tmp.add('')
     return First[symbol]
 
 def first_list(symbol_list):
@@ -151,16 +151,16 @@ def genProcedure():
         print('}\n')
 
 if __name__ == '__main__':
-    with open('grammar') as fp:
+    with open('grammarTest') as fp:
         for line in fp:
             convert(line)
 
-    # for nonTerminal in grammar.keys():
-    #     print('{:25}{}'.format(nonTerminal, first(nonTerminal)))
+    for nonTerminal in grammar.keys():
+        print('{:25}{}'.format(nonTerminal, first(nonTerminal)))
 
     # print('*' * 90)
     follow()
-    # for nonTerminal in grammar.keys():
-    #     print('{:25}{}'.format(nonTerminal, Follow[nonTerminal]))
-    genProcedure()
+    for nonTerminal in grammar.keys():
+        print('{:25}{}'.format(nonTerminal, Follow[nonTerminal]))
+    # genProcedure()
     print(isLL1())

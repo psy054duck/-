@@ -18,7 +18,7 @@ def run(index = -1):
     sources.sort(key=lambda x: len(x))
     if index == -1:
         for source in sources:
-            res = os.system('java Test ' + source + ' 1> /dev/null 2> ../result/' + os.path.basename(source))
+            res = os.system('java Test ' + source + ' 2> ../result/' + os.path.basename(source))
             print(source + ': ' + str(res >> 8))
     else:
         res = os.system('java Test ' + sources[index])

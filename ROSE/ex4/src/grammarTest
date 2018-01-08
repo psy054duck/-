@@ -1,8 +1,8 @@
-E ::= T EP
-EP ::= + T EP
-EP ::=
-T ::= F TP
-TP ::= * F TP
-TP ::=
-F ::= ( E )
-F ::= id
+S ::= T B
+B ::= A B
+B ::= 
+A ::= + S
+A ::= T B
+A ::= *
+T ::= ( S )
+T ::= a

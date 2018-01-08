@@ -1,0 +1,5 @@
+Exception in thread "main" exceptions.IllegalOctalException: 01239  line: 9       column: 14
+	at OberonScanner.next_token(OberonScanner.java:656)
+	at java_cup.runtime.lr_parser.scan(lr_parser.java:366)
+	at java_cup.runtime.lr_parser.parse(lr_parser.java:693)
+	at Main.main(Main.java:9)
