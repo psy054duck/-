@@ -1,4 +1,0 @@
-Exception in thread "main" exceptions.MismatchedCommentException: (*  line: 1       column: 1
-	at OberonScanner.yylex(OberonScanner.java:742)
-	at OberonParser.<init>(OberonParser.java:26)
-	at OberonParser.main(OberonParser.java:854)

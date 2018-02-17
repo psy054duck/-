@@ -1,4 +1,5 @@
 import re
+import sys
 
 grammar = {}
 First = {}
@@ -151,7 +152,7 @@ def genProcedure():
         print('}\n')
 
 if __name__ == '__main__':
-    with open('grammarTest') as fp:
+    with open(sys.argv[1]) as fp:
         for line in fp:
             convert(line)
 

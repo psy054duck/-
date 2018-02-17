@@ -1,9 +1,0 @@
-Exception in thread "main" exceptions.MissingLeftParenthesisException: data    line: 5    column: 19
-	at OberonParser.formal_parameters(OberonParser.java:436)
-	at OberonParser.procedure_heading(OberonParser.java:423)
-	at OberonParser.procedure_declaration(OberonParser.java:398)
-	at OberonParser.procedure_declarations(OberonParser.java:389)
-	at OberonParser.declarations(OberonParser.java:275)
-	at OberonParser.module(OberonParser.java:252)
-	at OberonParser.parse(OberonParser.java:40)
-	at OberonParser.main(OberonParser.java:855)
